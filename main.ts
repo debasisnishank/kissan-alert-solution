@@ -4,8 +4,9 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-// Load .env only in local development (not on Deno Deploy)
-if (!Deno.env.get("DENO_DEPLOYMENT_ID")) {
+// Load .env only in local development (not on Deno Deploy or Cloud Run,
+// which set DENO_DEPLOYMENT_ID / K_SERVICE and provide env vars directly)
+if (!Deno.env.get("DENO_DEPLOYMENT_ID") && !Deno.env.get("K_SERVICE")) {
   const { load } = await import("$std/dotenv/mod.ts");
   await load({ allowEmptyValues: true, export: true });
 }
