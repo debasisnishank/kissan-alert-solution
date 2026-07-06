@@ -80,7 +80,7 @@ export default function PortfolioPage({ data }: PageProps<PortfolioPageData>) {
     <Layout title="Portfolio Analytics - Bank Portal">
       <div class="min-h-screen bg-gray-50">
         <header class="bg-white border-b">
-          <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-4">
               <a href="/bank" class="text-gray-500 hover:text-gray-700">
                 ← Back
@@ -97,7 +97,7 @@ export default function PortfolioPage({ data }: PageProps<PortfolioPageData>) {
           </div>
         </header>
 
-        <main class="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
           {/* Key Metrics */}
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white rounded-xl p-6 border">

@@ -107,7 +107,7 @@ export default function AssessmentsPage(
     <Layout title="Loan Assessments - Bank Portal">
       <div class="min-h-screen bg-gray-50">
         <header class="bg-white border-b">
-          <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
             <div class="flex items-center gap-4">
               <a href="/bank" class="text-gray-500 hover:text-gray-700">
                 ← Back
@@ -128,7 +128,7 @@ export default function AssessmentsPage(
           </div>
         </header>
 
-        <main class="max-w-7xl mx-auto px-6 py-6">
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           {/* Filters */}
           <div class="mb-6 flex gap-2 flex-wrap">
             <a
@@ -167,131 +167,139 @@ export default function AssessmentsPage(
           <div class="bg-white rounded-xl border overflow-hidden">
             {loans.length > 0
               ? (
-                <table class="w-full">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Application
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Customer
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Type
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Amount
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Agri Score
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Risk
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Status
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Date
-                      </th>
-                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y">
-                    {loans.map((loan) => (
-                      <tr key={loan.id} class="hover:bg-gray-50">
-                        <td class="px-4 py-4">
-                          <p class="font-medium text-gray-900 text-sm">
-                            {loan.applicationNumber || loan.id.slice(0, 8)}
-                          </p>
-                          {loan.farmName && (
-                            <p class="text-xs text-gray-500">{loan.farmName}</p>
-                          )}
-                        </td>
-                        <td class="px-4 py-4">
-                          <p class="font-medium text-gray-900 text-sm">
-                            {loan.customerName}
-                          </p>
-                          <p class="text-xs text-gray-500">
-                            {loan.customerPhone}
-                          </p>
-                        </td>
-                        <td class="px-4 py-4 text-sm text-gray-600">
-                          {loanTypeLabels[loan.loanType] || loan.loanType}
-                        </td>
-                        <td class="px-4 py-4">
-                          <p class="text-sm text-gray-900">
-                            ₹{(loan.requestedAmount / 1000).toFixed(0)}K
-                          </p>
-                          {loan.approvedAmount && (
-                            <p class="text-xs text-green-600">
-                              Appr: ₹{(loan.approvedAmount / 1000).toFixed(0)}K
-                            </p>
-                          )}
-                        </td>
-                        <td class="px-4 py-4">
-                          {loan.agriScore
-                            ? (
-                              <span
-                                class={`font-bold ${
-                                  loan.agriScore >= 70
-                                    ? "text-green-600"
-                                    : loan.agriScore >= 50
-                                    ? "text-yellow-600"
-                                    : "text-red-600"
-                                }`}
-                              >
-                                {loan.agriScore}
-                              </span>
-                            )
-                            : <span class="text-gray-400">-</span>}
-                        </td>
-                        <td class="px-4 py-4">
-                          {loan.riskCategory
-                            ? (
-                              <span
-                                class={`px-2 py-1 rounded text-xs font-medium capitalize ${
-                                  loan.riskCategory === "low"
-                                    ? "bg-green-100 text-green-700"
-                                    : loan.riskCategory === "medium"
-                                    ? "bg-yellow-100 text-yellow-700"
-                                    : "bg-red-100 text-red-700"
-                                }`}
-                              >
-                                {loan.riskCategory}
-                              </span>
-                            )
-                            : <span class="text-gray-400">-</span>}
-                        </td>
-                        <td class="px-4 py-4">
-                          <span
-                            class={`px-2 py-1 rounded text-xs font-medium capitalize ${
-                              statusColors[loan.status]
-                            }`}
-                          >
-                            {loan.status.replace("_", " ")}
-                          </span>
-                        </td>
-                        <td class="px-4 py-4 text-xs text-gray-500">
-                          {new Date(loan.createdAt).toLocaleDateString("en-IN")}
-                        </td>
-                        <td class="px-4 py-4">
-                          <a
-                            href={`/bank/assessment/${loan.id}`}
-                            class="text-indigo-600 text-sm hover:underline"
-                          >
-                            {loan.status === "draft" ||
-                                loan.status === "submitted"
-                              ? "Assess"
-                              : "View"}
-                          </a>
-                        </td>
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Application
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Customer
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Type
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Amount
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Agri Score
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Risk
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Status
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Date
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          Actions
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody class="divide-y">
+                      {loans.map((loan) => (
+                        <tr key={loan.id} class="hover:bg-gray-50">
+                          <td class="px-4 py-4">
+                            <p class="font-medium text-gray-900 text-sm">
+                              {loan.applicationNumber || loan.id.slice(0, 8)}
+                            </p>
+                            {loan.farmName && (
+                              <p class="text-xs text-gray-500">
+                                {loan.farmName}
+                              </p>
+                            )}
+                          </td>
+                          <td class="px-4 py-4">
+                            <p class="font-medium text-gray-900 text-sm">
+                              {loan.customerName}
+                            </p>
+                            <p class="text-xs text-gray-500">
+                              {loan.customerPhone}
+                            </p>
+                          </td>
+                          <td class="px-4 py-4 text-sm text-gray-600">
+                            {loanTypeLabels[loan.loanType] || loan.loanType}
+                          </td>
+                          <td class="px-4 py-4">
+                            <p class="text-sm text-gray-900">
+                              ₹{(loan.requestedAmount / 1000).toFixed(0)}K
+                            </p>
+                            {loan.approvedAmount && (
+                              <p class="text-xs text-green-600">
+                                Appr: ₹{(loan.approvedAmount / 1000).toFixed(
+                                  0,
+                                )}K
+                              </p>
+                            )}
+                          </td>
+                          <td class="px-4 py-4">
+                            {loan.agriScore
+                              ? (
+                                <span
+                                  class={`font-bold ${
+                                    loan.agriScore >= 70
+                                      ? "text-green-600"
+                                      : loan.agriScore >= 50
+                                      ? "text-yellow-600"
+                                      : "text-red-600"
+                                  }`}
+                                >
+                                  {loan.agriScore}
+                                </span>
+                              )
+                              : <span class="text-gray-400">-</span>}
+                          </td>
+                          <td class="px-4 py-4">
+                            {loan.riskCategory
+                              ? (
+                                <span
+                                  class={`px-2 py-1 rounded text-xs font-medium capitalize ${
+                                    loan.riskCategory === "low"
+                                      ? "bg-green-100 text-green-700"
+                                      : loan.riskCategory === "medium"
+                                      ? "bg-yellow-100 text-yellow-700"
+                                      : "bg-red-100 text-red-700"
+                                  }`}
+                                >
+                                  {loan.riskCategory}
+                                </span>
+                              )
+                              : <span class="text-gray-400">-</span>}
+                          </td>
+                          <td class="px-4 py-4">
+                            <span
+                              class={`px-2 py-1 rounded text-xs font-medium capitalize ${
+                                statusColors[loan.status]
+                              }`}
+                            >
+                              {loan.status.replace("_", " ")}
+                            </span>
+                          </td>
+                          <td class="px-4 py-4 text-xs text-gray-500">
+                            {new Date(loan.createdAt).toLocaleDateString(
+                              "en-IN",
+                            )}
+                          </td>
+                          <td class="px-4 py-4">
+                            <a
+                              href={`/bank/assessment/${loan.id}`}
+                              class="text-indigo-600 text-sm hover:underline"
+                            >
+                              {loan.status === "draft" ||
+                                  loan.status === "submitted"
+                                ? "Assess"
+                                : "View"}
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )
               : (
                 <div class="p-8 text-center">

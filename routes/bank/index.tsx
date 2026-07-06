@@ -116,9 +116,9 @@ export default function BankDashboard({ data }: PageProps<BankDashboardData>) {
       <div class="min-h-screen bg-gray-50">
         {/* Header */}
         <header class="bg-white border-b">
-          <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-4">
-              <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <div class="w-10 h-10 shrink-0 bg-indigo-600 rounded-lg flex items-center justify-center">
                 <svg
                   class="w-6 h-6 text-white"
                   fill="none"
@@ -142,7 +142,7 @@ export default function BankDashboard({ data }: PageProps<BankDashboardData>) {
                 </p>
               </div>
             </div>
-            <nav class="flex items-center gap-4 text-sm">
+            <nav class="flex items-center gap-4 text-sm overflow-x-auto whitespace-nowrap -mx-4 px-4 sm:mx-0 sm:px-0">
               <a href="/bank" class="text-indigo-600 font-medium">Dashboard</a>
               <a
                 href="/bank/customers"
@@ -175,7 +175,7 @@ export default function BankDashboard({ data }: PageProps<BankDashboardData>) {
           </div>
         </header>
 
-        <main class="max-w-7xl mx-auto px-6 py-6">
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           {/* Stats Grid */}
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
             <StatCard
