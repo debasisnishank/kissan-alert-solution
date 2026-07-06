@@ -12,10 +12,9 @@ COPY . .
 # Cache application dependencies
 RUN deno cache main.ts dev.ts workers/main.ts
 
-# Create non-root user
-RUN addgroup --system --gid 1001 deno && \
-    adduser --system --uid 1001 --gid 1001 deno && \
-    chown -R deno:deno /app
+# denoland/deno base images already ship a non-root `deno` user; just
+# make sure it owns the app directory.
+RUN chown -R deno:deno /app
 
 USER deno
 
