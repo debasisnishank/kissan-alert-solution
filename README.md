@@ -69,7 +69,8 @@ weather to deliver personalized farm recommendations as an installable web PWA.
 
 - [Deno](https://deno.com/) v2.0+
 - A PostgreSQL 16 database with PostGIS — either:
-  - [Neon](https://neon.tech) serverless Postgres (free tier, no local setup), or
+  - [Neon](https://neon.tech) serverless Postgres (free tier, no local setup),
+    or
   - Local via [Docker](https://docker.com/) Compose (included)
 
 ### 1. Clone & Configure
@@ -80,14 +81,14 @@ cd compass-deno
 cp .env.example .env
 ```
 
-Edit `.env` with your values. See the **Environment Variables** section
-below for the full list. At minimum you need `DATABASE_URL` and `APP_SECRET`.
+Edit `.env` with your values. See the **Environment Variables** section below
+for the full list. At minimum you need `DATABASE_URL` and `APP_SECRET`.
 
 ### 2. Database
 
-**Option A — Neon (recommended):** create a free project at
-https://neon.tech and set `DATABASE_URL` in `.env` to the **direct**
-(non-pooler) connection string, e.g.
+**Option A — Neon (recommended):** create a free project at https://neon.tech
+and set `DATABASE_URL` in `.env` to the **direct** (non-pooler) connection
+string, e.g.
 
 ```
 DATABASE_URL=postgres://user:pass@ep-xxx.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
@@ -99,9 +100,9 @@ DATABASE_URL=postgres://user:pass@ep-xxx.ap-southeast-1.aws.neon.tech/neondb?ssl
 docker-compose up -d postgres
 ```
 
-(The default `DATABASE_URL` in `.env.example` already points at this
-container.) Migrations create the required `postgis` and `uuid-ossp`
-extensions automatically.
+(The default `DATABASE_URL` in `.env.example` already points at this container.)
+Migrations create the required `postgis` and `uuid-ossp` extensions
+automatically.
 
 ### 3. Run Migrations
 
@@ -119,8 +120,8 @@ deno task seed:schemes     # real government schemes (PM-KISAN, KALIA, PMFBY…)
 deno task sync:farms       # fetch live satellite/weather observations
 ```
 
-Creates a demo tenant, admin user, sample farms (Pune, Koraput, Anantapur),
-crop data, schemes, and field observations.
+Creates a demo tenant, admin user, sample farms (Pune, Koraput, Anantapur), crop
+data, schemes, and field observations.
 
 ### 5. Start the App — one command runs everything
 
@@ -130,8 +131,8 @@ deno task dev
 
 Open http://localhost:8000
 
-There is **no separate frontend and backend** to start. Fresh is a
-full-stack framework: this single process serves
+There is **no separate frontend and backend** to start. Fresh is a full-stack
+framework: this single process serves
 
 - the server-rendered **frontend** (farmer PWA at `/app`, admin at `/admin`,
   bank portal at `/bank`),

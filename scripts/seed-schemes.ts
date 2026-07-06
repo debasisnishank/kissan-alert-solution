@@ -43,7 +43,11 @@ const SCHEMES: SchemeSeed[] = [
       "Small & marginal farmers and landless agricultural households of Odisha; identified via Green Form/verification.",
     benefits:
       "₹4,000/year cultivation support per farm family; ₹12,500 livelihood support for landless households",
-    documents: ["Aadhaar card", "Bank passbook", "Land record or landless certificate"],
+    documents: [
+      "Aadhaar card",
+      "Bank passbook",
+      "Land record or landless certificate",
+    ],
     url: "https://kalia.odisha.gov.in/",
   },
   {
@@ -55,7 +59,12 @@ const SCHEMES: SchemeSeed[] = [
     eligibility:
       "All farmers growing notified crops in notified areas, including sharecroppers and tenant farmers.",
     benefits: "Insured sum paid on assessed crop loss; low fixed premium",
-    documents: ["Aadhaar card", "Land record / tenancy agreement", "Bank passbook", "Sowing declaration"],
+    documents: [
+      "Aadhaar card",
+      "Land record / tenancy agreement",
+      "Bank passbook",
+      "Sowing declaration",
+    ],
     url: "https://pmfby.gov.in/",
   },
   {
@@ -68,7 +77,12 @@ const SCHEMES: SchemeSeed[] = [
       "Farmers (owner cultivators, tenants, sharecroppers, SHGs); animal husbandry & fisheries included.",
     benefits:
       "Credit up to ₹3 lakh at subsidised interest; interest subvention 2% + prompt repayment incentive 3%",
-    documents: ["Aadhaar card", "Land record", "Bank account", "Passport photo"],
+    documents: [
+      "Aadhaar card",
+      "Land record",
+      "Bank account",
+      "Passport photo",
+    ],
     url: "https://www.myscheme.gov.in/schemes/kcc",
   },
   {
@@ -77,7 +91,8 @@ const SCHEMES: SchemeSeed[] = [
     description:
       "Free soil testing every 2 years with crop-wise fertilizer recommendations (N, P, K, micronutrients) to cut input cost and improve yield.",
     type: "subsidy",
-    eligibility: "All farmers; samples collected via state agriculture department.",
+    eligibility:
+      "All farmers; samples collected via state agriculture department.",
     benefits: "Free soil test report + fertilizer dose recommendation per crop",
     documents: ["Aadhaar card", "Land details"],
     url: "https://soilhealth.dac.gov.in/",
@@ -91,7 +106,13 @@ const SCHEMES: SchemeSeed[] = [
     eligibility:
       "Odisha residents 18+ taking up commercial agri-enterprise; priority to SC/ST, women, unemployed graduates.",
     benefits: "Capital subsidy 40–50% of project cost (caps by category)",
-    documents: ["Aadhaar card", "Project report", "Land document/lease", "Bank account", "Caste certificate (if applicable)"],
+    documents: [
+      "Aadhaar card",
+      "Project report",
+      "Land document/lease",
+      "Bank account",
+      "Caste certificate (if applicable)",
+    ],
     url: "https://apicol.odisha.gov.in/",
   },
 ];
@@ -117,7 +138,15 @@ for (const s of SCHEMES) {
     `INSERT INTO government_schemes (name, description, type, eligibility, benefits, documents_required, document_url, is_active)
      SELECT $1::varchar, $2::text, $3::varchar, $4::text, $5::text, $6::jsonb, $7::text, true
      WHERE NOT EXISTS (SELECT 1 FROM government_schemes WHERE name = $1::varchar)`,
-    [s.name, s.description, s.type, s.eligibility, s.benefits, JSON.stringify(s.documents), s.url],
+    [
+      s.name,
+      s.description,
+      s.type,
+      s.eligibility,
+      s.benefits,
+      JSON.stringify(s.documents),
+      s.url,
+    ],
   );
 }
 

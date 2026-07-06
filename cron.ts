@@ -217,7 +217,9 @@ Deno.cron("update-weather", "0 */3 * * *", async () => {
             rainfall7d: totalRainfall,
             tempMax: maxTemp,
             tempMin: minTemp,
-            description: `7-day forecast: ${totalRainfall.toFixed(0)}mm rain, ${maxTemp.toFixed(0)}°C max`,
+            description: `7-day forecast: ${totalRainfall.toFixed(0)}mm rain, ${
+              maxTemp.toFixed(0)
+            }°C max`,
           }).catch(() => {});
         }
       } catch {

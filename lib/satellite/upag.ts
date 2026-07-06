@@ -141,8 +141,8 @@ export async function getCropStatistics(params: {
         district: item.District ? String(item.District) : undefined,
         cropYear: String(item.CropYear || item.Year || ""),
         crop: String(item.Crop || ""),
-        season: (String(item.Season || "kharif")
-          .toLowerCase() as UPAgCropData["season"]),
+        season: String(item.Season || "kharif")
+          .toLowerCase() as UPAgCropData["season"],
         area: Number(item.CropArea || item.Area || 0),
         areaUnit: String(item.CropAreaUOM || "Ha"),
         yield: Number(item.CropYield || item.Yield || 0),
@@ -257,8 +257,8 @@ export async function getDistrictCropData(params: {
         district: String(item.DistrictName || item.District || ""),
         cropYear: String(item.CropYear || item.Year || ""),
         crop: String(item.Crop || ""),
-        season: (String(item.Season || "kharif")
-          .toLowerCase() as UPAgCropData["season"]),
+        season: String(item.Season || "kharif")
+          .toLowerCase() as UPAgCropData["season"],
         area: Number(item.CropArea || item.Area || 0),
         areaUnit: String(item.CropAreaUOM || "Ha"),
         yield: Number(item.CropYield || item.Yield || 0),
@@ -317,8 +317,8 @@ export async function getMNCFCForecast(params: {
         stateName: String(item.StateName || ""),
         cropYear: String(item.CropYear || ""),
         crop: String(item.Crop || ""),
-        season:
-          (String(item.Season || "").toLowerCase() as UPAgCropData["season"]),
+        season: String(item.Season || "")
+          .toLowerCase() as UPAgCropData["season"],
         area: Number(item.CropArea || 0),
         areaUnit: String(item.CropAreaUOM || "Ha"),
         yield: Number(item.CropYield || 0),
