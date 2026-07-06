@@ -69,7 +69,9 @@ export function setup() {
   let token = null;
   try {
     token = JSON.parse(res.body).token;
-  } catch {}
+  } catch {
+    // ignore parse errors
+  }
 
   return { token };
 }
@@ -117,7 +119,9 @@ export default function (data) {
     try {
       const body = JSON.parse(res.body);
       videoIds = (body.data || []).map((v) => v.id);
-    } catch {}
+    } catch {
+      // ignore parse errors
+    }
   });
 
   sleep(Math.random() * 1 + 0.3);

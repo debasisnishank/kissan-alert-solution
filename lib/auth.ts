@@ -467,7 +467,7 @@ export function generateOTP(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-export async function sendOTP(
+export function sendOTP(
   phone: string,
 ): Promise<{ success: boolean; message: string }> {
   const otp = generateOTP();
@@ -476,7 +476,7 @@ export async function sendOTP(
   // In production, integrate with SMS provider (MSG91, Twilio, etc.)
   console.log(`[DEV] OTP for ${phone}: ${otp}`);
 
-  return { success: true, message: "OTP sent successfully" };
+  return Promise.resolve({ success: true, message: "OTP sent successfully" });
 }
 
 export function verifyOTP(phone: string, otp: string): boolean {

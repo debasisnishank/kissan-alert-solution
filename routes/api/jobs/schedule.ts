@@ -89,7 +89,7 @@ export const handler: Handlers<unknown, AuthState> = {
               .split("T")[0];
             const endDate = today.toISOString().split("T")[0];
 
-            const jobId = await enqueueJob("ingest_satellite_catalog", {
+            const _jobId = await enqueueJob("ingest_satellite_catalog", {
               source: "all",
               bbox: {
                 minLon: bbox[0].min_lon,

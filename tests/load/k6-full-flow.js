@@ -98,7 +98,9 @@ export function setup() {
     try {
       const body = JSON.parse(res.body);
       if (body.token) tokens.push(body.token);
-    } catch {}
+    } catch {
+      // ignore parse errors
+    }
   }
 
   return { tokens };
@@ -162,7 +164,9 @@ export default function (data) {
         const body = JSON.parse(res.body);
         const ids = (body.data || []).map((v) => v.id);
         videoIds = videoIds.concat(ids);
-      } catch {}
+      } catch {
+        // ignore parse errors
+      }
 
       sleep(Math.random() * 0.5 + 0.2);
     }

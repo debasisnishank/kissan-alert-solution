@@ -64,7 +64,9 @@ export function setup() {
   let token = null;
   try {
     token = JSON.parse(res.body).token;
-  } catch {}
+  } catch {
+    // ignore parse errors
+  }
   return { token };
 }
 

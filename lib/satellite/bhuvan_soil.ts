@@ -170,7 +170,7 @@ export function getBhuvanSoilWmsUrl(params: {
 /**
  * Get soil profile for Indian location based on state and coordinates
  */
-export async function getIndianSoilProfile(params: {
+export function getIndianSoilProfile(params: {
   lat: number;
   lon: number;
   state?: string;
@@ -298,7 +298,7 @@ export async function getIndianSoilProfile(params: {
       ? "severe"
       : "none";
 
-  return {
+  return Promise.resolve({
     soilOrder: soilInfo.order.split("/")[0],
     subOrder: dominantSoil,
     greatGroup: `${dominantSoil} soil`,
@@ -319,7 +319,7 @@ export async function getIndianSoilProfile(params: {
     salinityRisk,
     waterloggingRisk,
     source: "NBSS&LUP / Bhuvan",
-  };
+  });
 }
 
 /**
