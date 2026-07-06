@@ -1,8 +1,28 @@
 import { useSignal } from "@preact/signals";
+import { Fragment } from "preact";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+}
+
+/** Renders **bold** markers and numbered-list items from plain-text AI
+ * responses without pulling in a full markdown parser. */
+function formatMessage(content: string) {
+  const withLineBreaks = content
+    .replace(/\s(\d{1,2}\.\s+)(?=\*\*)/g, "\n$1")
+    .trim();
+
+  return withLineBreaks.split("\n").map((line, i) => (
+    <div key={i} class={i > 0 ? "mt-1.5" : ""}>
+      {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) => {
+        const boldMatch = part.match(/^\*\*(.+)\*\*$/);
+        return boldMatch
+          ? <strong key={j}>{boldMatch[1]}</strong>
+          : <Fragment key={j}>{part}</Fragment>;
+      })}
+    </div>
+  ));
 }
 
 interface Props {
@@ -212,7 +232,9 @@ export default function AIAssistant({
                       : "bg-white text-gray-800 border rounded-bl-none"
                   }`}
                 >
-                  {msg.content}
+                  {msg.role === "assistant"
+                    ? formatMessage(msg.content)
+                    : msg.content}
                 </div>
               </div>
             ))}
