@@ -2,12 +2,11 @@
 
 A production-ready, multi-tenant agricultural advisory platform for Indian
 farmers. Combines free satellite data, AI-powered crop analysis, and real-time
-weather to deliver personalized farm recommendations via web PWA and native
-mobile app.
+weather to deliver personalized farm recommendations as an installable web PWA.
 
 ## Features
 
-### Farmer-Facing (Web PWA + Mobile App)
+### Farmer-Facing (Web PWA)
 
 - **Farm Management** - Register farms with polygon boundaries on a map, track
   multiple farms
@@ -47,31 +46,12 @@ mobile app.
 - **Audit Logs** - Track all admin actions
 - **Data Sync** - Manual satellite/weather/market sync triggers
 
-### Mobile App (React Native) — companion, developed separately
-
-> **Demo note:** the primary deliverable is the **web PWA** above — it runs the
-> full feature set (crop recommendations, voice logging, AI scan) and installs
-> to a phone home screen from the browser. A React Native companion app
-> (Android/iOS, 10 screens, FCM push, deep linking) consumes the same backend
-> API but is maintained outside this repository and is **not needed to
-> evaluate the project**.
-
-- **10 Screens** - Home, Farms, Farm Detail, Alerts, Reels, Chat, Crop Scan, Add
-  Farm, Profile, Login
-- **Deep Linking** - `compass://farm/{id}`, `compass://alerts`,
-  `compass://reels`, etc.
-- **Push Notifications** - FCM with expandable images, custom sounds, deep link
-  navigation
-- **Camera Integration** - Crop disease/pest scanning with AI analysis
-- **TikTok-style Reels** - Full-screen vertical swipe with WebView embeds
-
 ## Tech Stack
 
 | Layer         | Technology                                          |
 | ------------- | --------------------------------------------------- |
 | Runtime       | Deno 2.0+                                           |
 | Web Framework | Fresh 1.6 (Preact, SSR)                             |
-| Mobile        | React Native 0.76.5                                 |
 | Database      | PostgreSQL 16 + PostGIS                             |
 | Auth          | Username/password, PBKDF2 hashing, session tokens   |
 | AI            | Google Gemini 2.0 Flash (analysis, chat, vision)    |
@@ -89,7 +69,6 @@ mobile app.
 
 - [Deno](https://deno.com/) v2.0+
 - [Docker](https://docker.com/) & Docker Compose
-- [Node.js](https://nodejs.org/) 18+ (for React Native mobile app)
 - PostgreSQL 16 with PostGIS extension
 
 ### 1. Clone & Configure
@@ -149,13 +128,10 @@ Default credentials after seeding:
 
 ### 7. Push Notifications (Optional)
 
-**Firebase Setup** (server-side FCM for web/app push):
+**Firebase Setup** (server-side FCM push):
 
 1. Create a Firebase project at https://console.firebase.google.com
 2. Generate a service account key → set the `FCM_*` env vars on the server
-
-The React Native companion app is maintained outside this repository; it
-consumes the same REST API and FCM configuration.
 
 ## Project Structure
 
@@ -333,24 +309,6 @@ compass-deno/
 | Every 12h | `fetch-video-reels`   | Fetch YouTube agriculture videos |
 | Daily 6AM | `market-prices`       | Update mandi market prices       |
 | Every 4h  | `cleanup-sessions`    | Remove expired sessions          |
-
-## Deep Linking (Mobile)
-
-The mobile app supports these URL schemes:
-
-| URL                       | Screen       |
-| ------------------------- | ------------ |
-| `compass://home`          | Home         |
-| `compass://farms`         | Farms list   |
-| `compass://farm/:farmId`  | Farm detail  |
-| `compass://alerts`        | Alerts       |
-| `compass://reels`         | Video reels  |
-| `compass://chat/:farmId?` | AI chat      |
-| `compass://scan/:farmId?` | Crop scanner |
-| `compass://add-farm`      | Add farm     |
-| `compass://profile`       | Profile      |
-
-Also supports web deep links: `https://compass-deno.deno.dev/farm/:farmId`
 
 ## Deployment
 
