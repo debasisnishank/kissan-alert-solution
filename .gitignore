@@ -1,0 +1,65 @@
+# ── Local-only ────────────────────────────────────────────
+# React Native companion app — kept locally, not part of the repo
+app/
+# Working notes — only README.md ships
+CLAUDE.md
+HACKATHON_REQUIREMENTS.md
+PRODUCTION_FIXES.md
+tests/load/AUDIT.md
+
+# ── Secrets — never commit ────────────────────────────────
+.env
+.env.local
+.env.*.local
+# Firebase app configs (contain project API keys)
+google-services.json
+GoogleService-Info.plist
+# Service-account / signing material
+*service-account*.json
+*.pem
+*.p8
+*.p12
+*.jks
+*.keystore
+
+# ── Dependencies ──────────────────────────────────────────
+node_modules/
+app/ios/Pods/
+vendor/
+
+# ── Build output ──────────────────────────────────────────
+_fresh/
+dist/
+build/
+app/android/.gradle/
+app/android/app/build/
+app/android/build/
+app/ios/build/
+app/ios/DerivedData/
+*.apk
+*.aab
+*.ipa
+
+# ── Test / coverage ───────────────────────────────────────
+coverage/
+*.lcov
+tests/load/results/
+
+# ── Logs & caches ─────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-error.log
+.metro-health-check*
+.expo/
+
+# ── IDE / OS ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Local scratch ─────────────────────────────────────────
+*.backup
+tmp/

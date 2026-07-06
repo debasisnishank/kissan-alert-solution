@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      # Required environment variables for CI
+      APP_ENV: development
+      APP_URL: http://localhost:8000
+      APP_SECRET: test-secret-key-min-32-chars-long-for-ci
+      DATABASE_URL: postgres://compass:compass@localhost:5432/compass
+      DATABASE_POOL_SIZE: 10
+      REDIS_URL: redis://localhost:6379
+      REDIS_PASSWORD: ""
+      S3_ENDPOINT: http://localhost:9000
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      S3_BUCKET_RASTER: compass-rasters
+      S3_BUCKET_MEDIA: compass-media
+      S3_BUCKET_AUDIO: compass-audio
+      GEMINI_API_KEY: test-key
+      SARVAM_API_KEY: ""
+      SARVAM_API_URL: https://api.sarvam.ai/v1
+      COPERNICUS_CLIENT_ID: ""
+      COPERNICUS_CLIENT_SECRET: ""
+      DATA_GOV_API_KEY: ""
+      OLA_MAPS_API_KEY: ""
+      MOCK_SATELLITE_DATA: "true"
+      ENABLE_SMS_OTP: "false"
+      ENABLE_VOICE_ALERTS: "false"
+      DEFAULT_TENANT_ID: default
+      YOUTUBE_API_KEY: ""
+      FACEBOOK_PAGE_ACCESS_TOKEN: ""
+      FACEBOOK_PAGE_IDS: ""
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Check formatting
+        run: deno fmt --check
+
+      - name: Run linter
+        run: deno lint
+
+      - name: Type check
+        run: deno check **/*.ts **/*.tsx

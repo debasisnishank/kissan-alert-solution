@@ -1,0 +1,37 @@
+name: Deploy
+on:
+  push:
+    branches: [ujjwal-290120261601]
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write # Needed for auth with Deno Deploy
+      contents: read # Needed to clone the repository
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Build step
+        run: "deno task build"
+        env:
+          DENO_DEPLOYMENT_ID: "build"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DEFAULT_TENANT_ID: ${{ secrets.DEFAULT_TENANT_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Upload to Deno Deploy
+        uses: denoland/deployctl@v1
+        with:
+          project: "compass-deno"
+          entrypoint: "main.ts"
+          root: "."

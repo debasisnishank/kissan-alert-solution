@@ -1,0 +1,86 @@
+{
+  "lock": false,
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "check": "deno fmt --check && deno lint && deno check **/*.ts **/*.tsx",
+    "dev": "deno run -A --watch=static/,routes/,islands/,components/ dev.ts",
+    "build": "deno run -A dev.ts build",
+    "preview": "deno run -A main.ts",
+    "start": "deno run -A main.ts",
+    "worker": "deno run -A --watch workers/main.ts",
+    "db:migrate": "deno run -A db/migrate.ts",
+    "db:seed": "deno run -A db/seed.ts",
+    "db:reset": "deno run -A db/reset.ts",
+    "seed:schemes": "deno run -A scripts/seed-schemes.ts",
+    "sync:farms": "deno run -A scripts/sync-farm-data.ts",
+    "update:farms": "deno run -A scripts/update-farm-data.ts",
+    "crawl:news": "deno run -A scripts/crawl-news.ts",
+    "check:db": "deno run -A scripts/check-db.ts",
+    "test": "deno test -A --parallel",
+    "test:coverage": "deno test -A --coverage=coverage",
+    "update": "deno run -A -r https://fresh.deno.dev/update ."
+  },
+  "lint": {
+    "rules": {
+      "tags": [
+        "fresh",
+        "recommended"
+      ],
+      "exclude": [
+        "react-no-danger"
+      ]
+    },
+    "exclude": [
+      "_fresh/",
+      "coverage/"
+    ]
+  },
+  "fmt": {
+    "exclude": [
+      "_fresh/",
+      "coverage/"
+    ]
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  },
+  "imports": {
+    "$fresh/": "https://deno.land/x/fresh@1.6.8/",
+    "$std/": "https://deno.land/std@0.220.1/",
+    "preact": "https://esm.sh/preact@10.22.0",
+    "preact/": "https://esm.sh/preact@10.22.0/",
+    "@preact/signals": "https://esm.sh/@preact/signals@1.2.3?deps=preact@10.22.0",
+    "@preact/signals-core": "https://esm.sh/@preact/signals-core@1.6.0",
+    "tailwindcss": "npm:tailwindcss@3.4.1",
+    "tailwindcss/plugin": "npm:tailwindcss@3.4.1/plugin.js",
+    "postcss": "npm:postcss@8.4.35",
+    "autoprefixer": "npm:autoprefixer@10.4.17",
+    "@tabler/icons-preact": "https://esm.sh/@tabler/icons-preact@3.3.0?deps=preact@10.22.0",
+    "zod": "https://deno.land/x/zod@v3.22.4/mod.ts",
+    "postgres": "https://deno.land/x/postgres@v0.19.3/mod.ts",
+    "redis": "https://deno.land/x/redis@v0.32.4/mod.ts",
+    "s3": "https://deno.land/x/s3_lite_client@0.7.0/mod.ts",
+    "geojson": "npm:geojson@0.5.0",
+    "turf": "npm:@turf/turf@7.0.0",
+    "$components/": "./components/",
+    "$islands/": "./islands/",
+    "$utils/": "./utils/",
+    "$db/": "./db/",
+    "$lib/": "./lib/",
+    "$ai/": "./ai/",
+    "$workers/": "./workers/"
+  },
+  "exclude": [
+    "**/_fresh/*",
+    "coverage/"
+  ],
+  "deploy": {
+    "project": "67694918-a535-42f2-b2a8-71b1c33e3aa9",
+    "exclude": [
+      "**/node_modules"
+    ],
+    "include": [],
+    "entrypoint": "main.ts"
+  }
+}
