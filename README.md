@@ -68,8 +68,9 @@ weather to deliver personalized farm recommendations as an installable web PWA.
 ### Prerequisites
 
 - [Deno](https://deno.com/) v2.0+
-- [Docker](https://docker.com/) & Docker Compose
-- PostgreSQL 16 with PostGIS extension
+- A PostgreSQL 16 database with PostGIS — either:
+  - [Neon](https://neon.tech) serverless Postgres (free tier, no local setup), or
+  - Local via [Docker](https://docker.com/) Compose (included)
 
 ### 1. Clone & Configure
 
@@ -82,18 +83,25 @@ cp .env.example .env
 Edit `.env` with your values. See the **Environment Variables** section
 below for the full list. At minimum you need `DATABASE_URL` and `APP_SECRET`.
 
-### 2. Start Database
+### 2. Database
+
+**Option A — Neon (recommended):** create a free project at
+https://neon.tech and set `DATABASE_URL` in `.env` to the **direct**
+(non-pooler) connection string, e.g.
+
+```
+DATABASE_URL=postgres://user:pass@ep-xxx.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+```
+
+**Option B — local Docker:**
 
 ```bash
 docker-compose up -d postgres
 ```
 
-Or use an existing PostgreSQL instance with PostGIS:
-
-```bash
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS postgis;
-```
+(The default `DATABASE_URL` in `.env.example` already points at this
+container.) Migrations create the required `postgis` and `uuid-ossp`
+extensions automatically.
 
 ### 3. Run Migrations
 
@@ -101,23 +109,43 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 deno task db:migrate
 ```
 
-This applies all 10 migrations creating 39+ tables.
+This applies all 12 migrations creating 40+ tables.
 
 ### 4. Seed Demo Data
 
 ```bash
-deno task db:seed
+deno task db:seed          # tenant, users, 3 demo farms, crops
+deno task seed:schemes     # real government schemes (PM-KISAN, KALIA, PMFBY…)
+deno task sync:farms       # fetch live satellite/weather observations
 ```
 
-Creates a demo tenant, admin user, sample farms, and crop data.
+Creates a demo tenant, admin user, sample farms (Pune, Koraput, Anantapur),
+crop data, schemes, and field observations.
 
-### 5. Start Development Server
+### 5. Start the App — one command runs everything
 
 ```bash
 deno task dev
 ```
 
 Open http://localhost:8000
+
+There is **no separate frontend and backend** to start. Fresh is a
+full-stack framework: this single process serves
+
+- the server-rendered **frontend** (farmer PWA at `/app`, admin at `/admin`,
+  bank portal at `/bank`),
+- the **REST API** (`routes/api/*` under `/api/…`), and
+- the **scheduled cron jobs** (satellite ingest, weather alerts, advisories —
+  registered from `cron.ts` at startup).
+
+Optional extra process for heavy background jobs only:
+
+```bash
+deno task worker   # background job queue processor (not needed for the demo)
+```
+
+For production-style serving without file watching: `deno task start`.
 
 ### 6. Login
 
