@@ -1,0 +1,34 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/141720930469/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-actions-deployer@kissan-alert-501602.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy compass \
+            --project kissan-alert-501602 \
+            --source . \
+            --region asia-south1 \
+            --allow-unauthenticated \
+            --memory 1Gi \
+            --set-secrets APP_SECRET=app-secret:latest,DATABASE_URL=database-url:latest,GEMINI_API_KEY=gemini-api-key:latest,GEMINI_API_KEY_ALT=gemini-api-key-alt:latest \
+            --quiet
