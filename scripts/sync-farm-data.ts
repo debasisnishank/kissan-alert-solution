@@ -6,12 +6,15 @@
 import { load } from "$std/dotenv/mod.ts";
 await load({ allowEmptyValues: true, export: true });
 
-import { closePool, execute, query } from "../db/client.ts";
-import { getCurrentFarmHealth } from "../lib/satellite/ndvi_extractor.ts";
-import {
-  checkWeatherAlerts,
-  getDailyWeather,
-} from "../lib/satellite/weather.ts";
+// Dynamic imports so .env is loaded before utils/env.ts reads DATABASE_URL
+// (static imports would hoist above the load() call)
+const { closePool, execute, query } = await import("../db/client.ts");
+const { getCurrentFarmHealth } = await import(
+  "../lib/satellite/ndvi_extractor.ts"
+);
+const { checkWeatherAlerts, getDailyWeather } = await import(
+  "../lib/satellite/weather.ts"
+);
 
 interface FarmRow {
   id: string;
@@ -170,7 +173,7 @@ async function syncFarmData() {
               alert.type,
               alert.severity,
               alert.message,
-              `${alert.message} - ${alert.recommendation}`,
+              alert.message,
               0.85,
               JSON.stringify({ weather: alert }),
             ],

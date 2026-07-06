@@ -1,6 +1,9 @@
 import { load } from "$std/dotenv/mod.ts";
 await load({ allowEmptyValues: true, export: true });
-import { getPool } from "./client.ts";
+
+// Dynamic import so .env is loaded before utils/env.ts reads DATABASE_URL
+// (a static import would hoist above the load() call)
+const { getPool } = await import("./client.ts");
 
 async function seed() {
   const pool = getPool();

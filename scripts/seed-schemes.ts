@@ -5,7 +5,9 @@
  */
 import { load } from "$std/dotenv/mod.ts";
 await load({ allowEmptyValues: true, export: true });
-import { query } from "../db/client.ts";
+
+// Dynamic import so .env is loaded before utils/env.ts reads DATABASE_URL
+const { query } = await import("../db/client.ts");
 
 interface SchemeSeed {
   name: string;

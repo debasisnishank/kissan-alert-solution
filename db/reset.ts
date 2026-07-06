@@ -1,6 +1,6 @@
 import { load } from "$std/dotenv/mod.ts";
 await load({ allowEmptyValues: true, export: true });
-import { getPool } from "./client.ts";
+const { getPool } = await import("./client.ts");
 import { migrations } from "./migrate.ts";
 
 async function reset() {

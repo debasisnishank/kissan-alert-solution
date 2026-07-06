@@ -1,7 +1,7 @@
 import { load } from "$std/dotenv/mod.ts";
 await load({ allowEmptyValues: true, export: true });
 
-import { closePool, query } from "../db/client.ts";
+const { closePool, query } = await import("../db/client.ts");
 import {
   checkWeatherAlerts,
   getDailyWeather,
