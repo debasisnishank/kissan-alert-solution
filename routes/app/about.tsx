@@ -80,10 +80,10 @@ export default function AboutPage() {
           <h2 class="font-semibold text-gray-900 mb-3">Contact</h2>
           <div class="space-y-2 text-sm">
             <p class="text-gray-600">
-              <span class="font-medium">Support:</span> support@compass.app
+              <span class="font-medium">Support:</span> support@khetscope.app
             </p>
             <p class="text-gray-600">
-              <span class="font-medium">Feedback:</span> feedback@compass.app
+              <span class="font-medium">Feedback:</span> feedback@khetscope.app
             </p>
           </div>
         </div>

@@ -117,14 +117,14 @@ const contactOptions = [
   {
     icon: "📧",
     title: "Email",
-    desc: "support@compass.agri",
-    action: "mailto:support@compass.agri",
+    desc: "support@khetscope.agri",
+    action: "mailto:support@khetscope.agri",
   },
   {
     icon: "🎥",
     title: "Video Tutorials",
     desc: "Watch on YouTube",
-    action: "https://youtube.com/@compass-agri",
+    action: "https://youtube.com/@khetscope-agri",
   },
 ];
 
