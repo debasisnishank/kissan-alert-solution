@@ -64,7 +64,7 @@ export const handler: Handlers<unknown, AuthState> = {
       return new Response(
         JSON.stringify({
           error: "AI analysis not available",
-          message: "Gemini API key not configured. Add GEMINI_API_KEY to .env",
+          message: "Vertex AI access not configured for this project.",
         }),
         { status: 503, headers: { "Content-Type": "application/json" } },
       );

@@ -15,7 +15,7 @@ export type AIProviderKind =
 
 export interface AIProviderConfig {
   provider: AIProviderKind;
-  /** Empty for gemini = use GEMINI_API_KEY env */
+  /** Empty for gemini = use the project's Vertex AI (IAM auth, no key) */
   apiKey: string;
   /** Model id; empty = provider default */
   model: string;
@@ -38,7 +38,7 @@ export const PROVIDER_PRESETS: Record<
     label: "Google Gemini (default)",
     defaultModel: "gemini-2.0-flash",
     baseUrl: "",
-    keyHint: "Uses GEMINI_API_KEY from .env when left blank",
+    keyHint: "Uses this project's Vertex AI access when left blank",
   },
   claude: {
     label: "Anthropic Claude",

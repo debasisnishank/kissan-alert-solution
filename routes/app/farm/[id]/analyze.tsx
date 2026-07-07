@@ -238,7 +238,7 @@ export default function AnalyzePage({ data }: PageProps<AnalyzePageData>) {
             </svg>
             <p class="text-gray-600 font-medium">AI Analysis Not Available</p>
             <p class="text-sm text-gray-500 mt-1">
-              Add GEMINI_API_KEY to enable AI-powered recommendations
+              Configure Vertex AI access to enable AI-powered recommendations
             </p>
           </div>
         )

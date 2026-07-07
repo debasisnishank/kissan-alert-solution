@@ -1,9 +1,68 @@
 /**
  * Google Gemini AI Integration for Advanced Farm Analysis
  * Provides detailed crop health analysis, pest identification, and recommendations
+ *
+ * Calls Gemini via Vertex AI (not the Google AI Studio API), authenticated
+ * with the runtime's own GCP identity -- no API key to configure or rotate.
+ * Billing runs through the normal Cloud Billing account instead of AI
+ * Studio's separate prepaid-credit system.
  */
 
 import { env } from "$utils/env.ts";
+
+const METADATA_TOKEN_URL =
+  "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token";
+
+let cachedToken: { value: string; expiresAt: number } | null = null;
+
+/**
+ * An access token for the current GCP identity. On Cloud Run/Compute Engine
+ * this comes from the metadata server (the attached service account); for
+ * local development it falls back to `gcloud auth application-default
+ * print-access-token` (run `gcloud auth application-default login` once).
+ */
+async function getAccessToken(): Promise<string> {
+  if (cachedToken && cachedToken.expiresAt > Date.now() + 30_000) {
+    return cachedToken.value;
+  }
+
+  const isDeployed = !!Deno.env.get("K_SERVICE") ||
+    !!Deno.env.get("DENO_DEPLOYMENT_ID");
+
+  if (isDeployed) {
+    const response = await fetch(METADATA_TOKEN_URL, {
+      headers: { "Metadata-Flavor": "Google" },
+    });
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get access token from metadata server: ${response.status}`,
+      );
+    }
+    const data = await response.json();
+    cachedToken = {
+      value: data.access_token,
+      expiresAt: Date.now() + (data.expires_in - 30) * 1000,
+    };
+    return cachedToken.value;
+  }
+
+  const command = new Deno.Command("gcloud", {
+    args: ["auth", "application-default", "print-access-token"],
+    stdout: "piped",
+    stderr: "piped",
+  });
+  const { success, stdout, stderr } = await command.output();
+  if (!success) {
+    throw new Error(
+      `Failed to get local access token (run "gcloud auth application-default login"): ${
+        new TextDecoder().decode(stderr)
+      }`,
+    );
+  }
+  const token = new TextDecoder().decode(stdout).trim();
+  cachedToken = { value: token, expiresAt: Date.now() + 25 * 60 * 1000 };
+  return token;
+}
 
 interface GeminiResponse {
   candidates: Array<{
@@ -59,65 +118,64 @@ const VALID_MODELS = [
 ];
 
 class GeminiClient {
-  private apiKey: string;
-  private baseUrl: string;
+  private projectId: string;
+  private location: string;
 
   constructor() {
-    this.apiKey = env.GEMINI_API_KEY || "";
-    this.baseUrl = "https://generativelanguage.googleapis.com/v1beta";
+    this.projectId = env.GOOGLE_CLOUD_PROJECT;
+    this.location = env.VERTEX_AI_LOCATION;
   }
 
-  /** Primary key plus optional rotation keys (GEMINI_API_KEY_ALT) */
-  private apiKeys(): string[] {
-    return [this.apiKey, Deno.env.get("GEMINI_API_KEY_ALT") || ""]
-      .filter(Boolean);
+  private endpointHost(): string {
+    // The "global" location is reached via the global (non-region-prefixed)
+    // aiplatform host; regional locations use a region-prefixed host.
+    return this.location === "global"
+      ? "aiplatform.googleapis.com"
+      : `${this.location}-aiplatform.googleapis.com`;
   }
 
   /**
-   * Core request: tries each API key (rotating on 429 quota exhaustion)
-   * and each model (falling through on 404) until one succeeds.
+   * Core request: tries each model (falling through on 404) until one
+   * succeeds, authenticated as the runtime's own GCP identity.
    */
   private async request(
     parts: Array<Record<string, unknown>>,
     generationConfig: Record<string, unknown>,
   ): Promise<string> {
-    const keys = this.apiKeys();
-    if (keys.length === 0) {
-      throw new Error("Gemini API key not configured");
-    }
+    const token = await getAccessToken();
 
     let lastError: Error | null = null;
-    for (const key of keys) {
-      for (const model of VALID_MODELS) {
-        const url =
-          `${this.baseUrl}/models/${model}:generateContent?key=${key}`;
-        const response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts }],
-            generationConfig,
-          }),
-        });
+    for (const model of VALID_MODELS) {
+      const url =
+        `https://${this.endpointHost()}/v1/projects/${this.projectId}` +
+        `/locations/${this.location}/publishers/google/models/${model}:generateContent`;
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig,
+        }),
+      });
 
-        if (response.ok) {
-          const data: GeminiResponse = await response.json();
-          return data.candidates[0]?.content?.parts[0]?.text || "";
-        }
-
-        const body = await response.text().catch(() => "");
-        lastError = new Error(
-          `Gemini API error: ${response.status} - ${body.slice(0, 300)}`,
-        );
-
-        if (response.status === 404) continue; // model not on this key
-        if (response.status === 429) break; // quota — rotate to next key
-        throw lastError;
+      if (response.ok) {
+        const data: GeminiResponse = await response.json();
+        return data.candidates[0]?.content?.parts[0]?.text || "";
       }
+
+      const body = await response.text().catch(() => "");
+      lastError = new Error(
+        `Vertex AI Gemini error: ${response.status} - ${body.slice(0, 300)}`,
+      );
+
+      if (response.status === 404) continue; // model not on this location
+      throw lastError;
     }
 
-    throw lastError ??
-      new Error("All Gemini models failed. Check your API key.");
+    throw lastError ?? new Error("All Gemini models failed.");
   }
 
   private generateContent(prompt: string): Promise<string> {
@@ -339,10 +397,10 @@ Respond in JSON (with text in ${langNames[params.language] || "English"}):
   }
 
   /**
-   * Check if Gemini is available
+   * Check if Gemini (via Vertex AI) is configured
    */
   isAvailable(): boolean {
-    return !!this.apiKey;
+    return !!this.projectId;
   }
 }
 

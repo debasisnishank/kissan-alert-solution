@@ -3,6 +3,7 @@ import { query } from "$db/client.ts";
 import { getActiveCropByFarm, getFarmById } from "$lib/farm.ts";
 import { getFarmHealthStats } from "$lib/observations.ts";
 import { getDailyWeather } from "$lib/satellite/weather.ts";
+import { gemini } from "$ai/gemini.ts";
 import type { AuthState } from "../../../middlewares/auth.ts";
 
 interface Recommendation {
@@ -99,13 +100,11 @@ export const handler: Handlers<unknown, AuthState> = {
     } catch { /* use defaults */ }
 
     // Try AI-powered recommendations
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
     let recommendations: Recommendation[] = [];
 
-    if (apiKey) {
+    if (gemini.isAvailable()) {
       try {
         recommendations = await getAIRecommendations(
-          apiKey,
           cropType,
           stage,
           daysAfterSowing,
@@ -145,7 +144,6 @@ export const handler: Handlers<unknown, AuthState> = {
 };
 
 async function getAIRecommendations(
-  apiKey: string,
   cropType: string,
   stage: string,
   daysAfterSowing: number,
@@ -196,42 +194,13 @@ RESPOND IN EXACT JSON FORMAT:
   ]
 }`;
 
-  // Try multiple models
-  const models = [
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
-    "gemini-1.5-flash",
-  ];
-
-  for (const model of models) {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.4, maxOutputTokens: 2048 },
-        }),
-      },
-    );
-
-    if (response.ok) {
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const result = JSON.parse(jsonMatch[0]);
-        return result.recommendations || [];
-      }
-    }
-
-    if (response.status !== 404) {
-      throw new Error(`Gemini API error: ${response.status}`);
-    }
+  const text = await gemini.generate(prompt);
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error("No JSON found in Gemini response");
   }
-
-  throw new Error("All Gemini models failed");
+  const result = JSON.parse(jsonMatch[0]);
+  return result.recommendations || [];
 }
 
 async function getProductBasedRecommendations(

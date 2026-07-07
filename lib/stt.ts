@@ -5,7 +5,7 @@
  * always labeled in the result — never silent):
  * 1. Google Cloud Speech-to-Text (event-recommended tool) when
  *    GOOGLE_STT_API_KEY is set and the audio encoding is supported
- * 2. Gemini multimodal audio (GEMINI_API_KEY) — also covers languages
+ * 2. Gemini multimodal audio (via Vertex AI) — also covers languages
  *    Cloud STT v1 lacks (e.g. Odia) and non-Opus containers (Safari mp4)
  * 3. Labeled mock so the demo flow works offline
  */

@@ -34,5 +34,5 @@ jobs:
             --min-instances 1 \
             --vpc-connector compass-connector \
             --vpc-egress private-ranges-only \
-            --set-secrets APP_SECRET=app-secret:latest,DATABASE_URL=database-url:latest,GEMINI_API_KEY=gemini-api-key:latest,GEMINI_API_KEY_ALT=gemini-api-key-alt:latest \
+            --set-secrets APP_SECRET=app-secret:latest,DATABASE_URL=database-url:latest \
             --quiet

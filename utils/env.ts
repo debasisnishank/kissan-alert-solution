@@ -37,9 +37,10 @@ export const env = {
   SARVAM_API_KEY: getEnv("SARVAM_API_KEY", ""),
   SARVAM_API_URL: getEnv("SARVAM_API_URL", "https://api.sarvam.ai/v1"),
 
-  // Gemini AI for analysis
-  GEMINI_API_KEY: getEnv("GEMINI_API_KEY", ""),
+  // Gemini AI for analysis, called via Vertex AI (IAM auth, no API key)
   GEMINI_MODEL: getEnv("GEMINI_MODEL", "gemini-2.0-flash"),
+  GOOGLE_CLOUD_PROJECT: getEnv("GOOGLE_CLOUD_PROJECT", "kissan-alert-501602"),
+  VERTEX_AI_LOCATION: getEnv("VERTEX_AI_LOCATION", "global"),
 
   // Satellite Data APIs (Copernicus - free)
   COPERNICUS_CLIENT_ID: getEnv("COPERNICUS_CLIENT_ID", ""),
