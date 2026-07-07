@@ -1533,7 +1533,7 @@ export default function FarmDetailPage({ data }: PageProps<FarmDetailData>) {
                   </div>
                   <div class="footer-right">
                     Report generated: \${new Date().toLocaleDateString('en-IN')}<br/>
-                    For queries: support@khetscope.agri | Helpline: 1800-XXX-XXXX
+                    For queries: support@khetscope.agri
                   </div>
                 </div>
               </body>
