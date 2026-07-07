@@ -1,5 +1,5 @@
 // Compass PWA Service Worker
-const CACHE_NAME = "compass-v1";
+const CACHE_NAME = "compass-v2";
 const STATIC_ASSETS = [
   "/",
   "/app",
@@ -61,6 +61,26 @@ self.addEventListener("fetch", (event) => {
           // Return cached response if network fails
           return caches.match(event.request);
         }),
+    );
+    return;
+  }
+
+  // HTML page navigations: network-first. These are authenticated, per-user
+  // pages that change often (and, previously, cache-first here served a
+  // stale page indefinitely once cached). Cache is only an offline fallback.
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request)),
     );
     return;
   }
