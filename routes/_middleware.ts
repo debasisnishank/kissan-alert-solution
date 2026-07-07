@@ -7,9 +7,12 @@ function securityHeaders(headers: Headers): void {
   headers.set("X-Frame-Options", "DENY");
   headers.set("X-XSS-Protection", "1; mode=block");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  // Empty allowlists (`camera=()`) block the feature entirely, even for the
+  // page's own same-origin JS -- the crop-scan camera and voice logger both
+  // need `self` here, not just third-party embeds locked out.
   headers.set(
     "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(self)",
+    "camera=(self), microphone=(self), geolocation=(self)",
   );
 }
 
