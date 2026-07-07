@@ -367,8 +367,9 @@ export default function ScanPage({ data }: PageProps<ScanPageData>) {
                   }),
                 });
 
-                const result = await response.json();
-                displayResults(result);
+                const body = await response.json();
+                if (!response.ok) throw new Error(body.error || 'Analysis failed');
+                displayResults(body.data);
               } catch (err) {
                 console.error('Analysis error:', err);
                 displayResults(generateMockAnalysis());
