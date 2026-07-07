@@ -3,14 +3,16 @@
  *
  * Provider chain (each step degrades to the next, and the provider used is
  * always labeled in the result — never silent):
- * 1. Google Cloud Speech-to-Text (event-recommended tool) when
- *    GOOGLE_STT_API_KEY is set and the audio encoding is supported
+ * 1. Google Cloud Speech-to-Text (event-recommended tool), IAM-authenticated
+ *    like Vertex AI, when the audio encoding is supported
  * 2. Gemini multimodal audio (via Vertex AI) — also covers languages
  *    Cloud STT v1 lacks (e.g. Odia) and non-Opus containers (Safari mp4)
  * 3. Labeled mock so the demo flow works offline
  */
 
 import { gemini } from "../ai/gemini.ts";
+import { getAccessToken } from "$lib/gcp-auth.ts";
+import { env } from "$utils/env.ts";
 
 export interface TranscriptionResult {
   transcript: string;
@@ -34,14 +36,18 @@ async function transcribeWithCloudStt(params: {
   audioBase64: string;
   mimeType: string;
   languageCode: string;
-  apiKey: string;
 }): Promise<TranscriptionResult | null> {
   const encoding = sttEncodingFor(params.mimeType);
   if (!encoding) return null;
 
-  const response = await fetch(`${STT_URL}?key=${params.apiKey}`, {
+  const token = await getAccessToken();
+  const response = await fetch(STT_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+      "x-goog-user-project": env.GOOGLE_CLOUD_PROJECT,
+    },
     body: JSON.stringify({
       config: {
         encoding,
@@ -122,19 +128,15 @@ export async function transcribeAudio(params: {
   const languageCode = params.languageCode || "hi-IN";
   const { audioBase64, mimeType } = params;
 
-  const sttKey = Deno.env.get("GOOGLE_STT_API_KEY");
-  if (sttKey) {
-    try {
-      const result = await transcribeWithCloudStt({
-        audioBase64,
-        mimeType,
-        languageCode,
-        apiKey: sttKey,
-      });
-      if (result) return result;
-    } catch (e) {
-      console.error("[STT] Cloud STT failed, falling back to Gemini:", e);
-    }
+  try {
+    const result = await transcribeWithCloudStt({
+      audioBase64,
+      mimeType,
+      languageCode,
+    });
+    if (result) return result;
+  } catch (e) {
+    console.error("[STT] Cloud STT failed, falling back to Gemini:", e);
   }
 
   try {
