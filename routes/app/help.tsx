@@ -103,18 +103,6 @@ const faqs = [
 
 const contactOptions = [
   {
-    icon: "📞",
-    title: "Helpline",
-    desc: "1800-XXX-XXXX (Toll Free)",
-    action: "tel:1800XXXXXXX",
-  },
-  {
-    icon: "💬",
-    title: "WhatsApp",
-    desc: "+91 XXXXX XXXXX",
-    action: "https://wa.me/91XXXXXXXXXX",
-  },
-  {
     icon: "📧",
     title: "Email",
     desc: "support@khetscope.agri",
