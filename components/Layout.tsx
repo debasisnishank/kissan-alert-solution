@@ -113,7 +113,6 @@ export function AppShell(
       <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-40">
         <div class="max-w-lg mx-auto flex justify-around">
           <NavItem href="/app" icon="home" label="Home" />
-          <NavItem href="/app/reels" icon="reels" label="Reels" />
           <NavItem href="/app/farm" icon="farm" label="My Farm" />
           <NavItem href="/app/market" icon="market" label="Market" />
           <NavItem href="/app/profile" icon="profile" label="Profile" />
@@ -125,7 +124,7 @@ export function AppShell(
 
 interface NavItemProps {
   href: string;
-  icon: "home" | "alert" | "farm" | "reels" | "market" | "profile";
+  icon: "home" | "alert" | "farm" | "market" | "profile";
   label: string;
 }
 
@@ -173,21 +172,6 @@ function NavItem({ href, icon, label }: NavItemProps) {
           stroke-linejoin="round"
           stroke-width="2"
           d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
-        />
-      </svg>
-    ),
-    reels: (
-      <svg
-        class="w-6 h-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
         />
       </svg>
     ),

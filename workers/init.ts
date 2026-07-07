@@ -49,25 +49,6 @@ export async function initQueueHandlers(): Promise<void> {
     await handleExtractFarmFeatures({ farmId });
   });
 
-  registerHandler("fetch_video_reels", async () => {
-    const { env } = await import("../utils/env.ts");
-    if (env.YOUTUBE_API_KEY) {
-      const { fetchYouTubeVideos } = await import("../lib/videos/youtube.ts");
-      await fetchYouTubeVideos(env.YOUTUBE_API_KEY);
-    }
-    if (env.FACEBOOK_PAGE_ACCESS_TOKEN && env.FACEBOOK_PAGE_IDS) {
-      const { fetchFacebookVideos } = await import(
-        "../lib/videos/facebook.ts"
-      );
-      const pageIds = env.FACEBOOK_PAGE_IDS.split(",").map((s: string) =>
-        s.trim()
-      ).filter(Boolean);
-      if (pageIds.length > 0) {
-        await fetchFacebookVideos(env.FACEBOOK_PAGE_ACCESS_TOKEN, pageIds);
-      }
-    }
-  });
-
   registerHandler("send_notification", async (payload) => {
     const { sendPushNotification } = await import("../lib/notifications.ts");
     await sendPushNotification(

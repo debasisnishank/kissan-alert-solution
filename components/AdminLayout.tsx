@@ -11,7 +11,6 @@ interface AdminLayoutProps {
     | "alerts"
     | "schemes"
     | "products"
-    | "reels"
     | "news"
     | "sync"
     | "analytics"
@@ -35,7 +34,6 @@ const NAV_ITEMS = [
   { key: "farms", href: "/admin/farms", label: "Farms", icon: "sprout" },
   { key: "users", href: "/admin/users", label: "Users", icon: "users" },
   { key: "alerts", href: "/admin/alerts", label: "Alerts", icon: "bell" },
-  { key: "reels", href: "/admin/reels", label: "Reels", icon: "video" },
   { key: "news", href: "/admin/news", label: "News", icon: "newspaper" },
   { key: "schemes", href: "/admin/schemes", label: "Schemes", icon: "shield" },
   {

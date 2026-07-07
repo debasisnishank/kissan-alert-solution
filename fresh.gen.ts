@@ -19,7 +19,6 @@ import * as $admin_notifications from "./routes/admin/notifications.tsx";
 import * as $admin_products_id_ from "./routes/admin/products/[id].tsx";
 import * as $admin_products_create from "./routes/admin/products/create.tsx";
 import * as $admin_products_index from "./routes/admin/products/index.tsx";
-import * as $admin_reels from "./routes/admin/reels.tsx";
 import * as $admin_schemes_id_edit from "./routes/admin/schemes/[id]/edit.tsx";
 import * as $admin_schemes_create from "./routes/admin/schemes/create.tsx";
 import * as $admin_schemes_index from "./routes/admin/schemes/index.tsx";
@@ -55,10 +54,6 @@ import * as $api_leads_token_ from "./routes/api/leads/[token].ts";
 import * as $api_push_register from "./routes/api/push/register.ts";
 import * as $api_push_unregister from "./routes/api/push/unregister.ts";
 import * as $api_recommendations_farmId_ from "./routes/api/recommendations/[farmId].ts";
-import * as $api_reels_fetch from "./routes/api/reels/fetch.ts";
-import * as $api_reels_index from "./routes/api/reels/index.ts";
-import * as $api_reels_like from "./routes/api/reels/like.ts";
-import * as $api_reels_view from "./routes/api/reels/view.ts";
 import * as $api_sync from "./routes/api/sync.ts";
 import * as $api_test_db from "./routes/api/test-db.ts";
 import * as $api_tickets_index from "./routes/api/tickets/index.ts";
@@ -87,7 +82,6 @@ import * as $app_onboarding from "./routes/app/onboarding.tsx";
 import * as $app_profile from "./routes/app/profile.tsx";
 import * as $app_profile_edit from "./routes/app/profile/edit.tsx";
 import * as $app_profile_notifications from "./routes/app/profile/notifications.tsx";
-import * as $app_reels from "./routes/app/reels.tsx";
 import * as $app_reports from "./routes/app/reports.tsx";
 import * as $app_scan from "./routes/app/scan.tsx";
 import * as $app_schemes from "./routes/app/schemes.tsx";
@@ -121,7 +115,6 @@ import * as $NDVIChart from "./islands/NDVIChart.tsx";
 import * as $NotificationSettings from "./islands/NotificationSettings.tsx";
 import * as $ProfileEditForm from "./islands/ProfileEditForm.tsx";
 import * as $RepaymentForm from "./islands/RepaymentForm.tsx";
-import * as $VideoReels from "./islands/VideoReels.tsx";
 import * as $VoiceLogger from "./islands/VoiceLogger.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
@@ -144,7 +137,6 @@ const manifest = {
     "./routes/admin/products/[id].tsx": $admin_products_id_,
     "./routes/admin/products/create.tsx": $admin_products_create,
     "./routes/admin/products/index.tsx": $admin_products_index,
-    "./routes/admin/reels.tsx": $admin_reels,
     "./routes/admin/schemes/[id]/edit.tsx": $admin_schemes_id_edit,
     "./routes/admin/schemes/create.tsx": $admin_schemes_create,
     "./routes/admin/schemes/index.tsx": $admin_schemes_index,
@@ -180,10 +172,6 @@ const manifest = {
     "./routes/api/push/register.ts": $api_push_register,
     "./routes/api/push/unregister.ts": $api_push_unregister,
     "./routes/api/recommendations/[farmId].ts": $api_recommendations_farmId_,
-    "./routes/api/reels/fetch.ts": $api_reels_fetch,
-    "./routes/api/reels/index.ts": $api_reels_index,
-    "./routes/api/reels/like.ts": $api_reels_like,
-    "./routes/api/reels/view.ts": $api_reels_view,
     "./routes/api/sync.ts": $api_sync,
     "./routes/api/test-db.ts": $api_test_db,
     "./routes/api/tickets/index.ts": $api_tickets_index,
@@ -212,7 +200,6 @@ const manifest = {
     "./routes/app/profile.tsx": $app_profile,
     "./routes/app/profile/edit.tsx": $app_profile_edit,
     "./routes/app/profile/notifications.tsx": $app_profile_notifications,
-    "./routes/app/reels.tsx": $app_reels,
     "./routes/app/reports.tsx": $app_reports,
     "./routes/app/scan.tsx": $app_scan,
     "./routes/app/schemes.tsx": $app_schemes,
@@ -248,7 +235,6 @@ const manifest = {
     "./islands/NotificationSettings.tsx": $NotificationSettings,
     "./islands/ProfileEditForm.tsx": $ProfileEditForm,
     "./islands/RepaymentForm.tsx": $RepaymentForm,
-    "./islands/VideoReels.tsx": $VideoReels,
     "./islands/VoiceLogger.tsx": $VoiceLogger,
   },
   baseUrl: import.meta.url,

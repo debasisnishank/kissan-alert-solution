@@ -232,47 +232,6 @@ Deno.cron("update-weather", "0 */3 * * *", async () => {
   }
 });
 
-// Video Reels Fetch - Every 12 hours
-Deno.cron("fetch-video-reels", "0 3,15 * * *", async () => {
-  console.log("[CRON] Starting video reels fetch...");
-  try {
-    const { env } = await import("./utils/env.ts");
-
-    // YouTube
-    if (env.YOUTUBE_API_KEY) {
-      const { fetchYouTubeVideos } = await import("./lib/videos/youtube.ts");
-      const ytCount = await fetchYouTubeVideos(env.YOUTUBE_API_KEY);
-      console.log(`[CRON] YouTube: ${ytCount} videos fetched`);
-    }
-
-    // Facebook (only if configured)
-    if (env.FACEBOOK_PAGE_ACCESS_TOKEN && env.FACEBOOK_PAGE_IDS) {
-      const { fetchFacebookVideos } = await import("./lib/videos/facebook.ts");
-      const pageIds = env.FACEBOOK_PAGE_IDS.split(",").map((s: string) =>
-        s.trim()
-      ).filter(Boolean);
-      if (pageIds.length > 0) {
-        const fbCount = await fetchFacebookVideos(
-          env.FACEBOOK_PAGE_ACCESS_TOKEN,
-          pageIds,
-        );
-        console.log(`[CRON] Facebook: ${fbCount} videos fetched`);
-      }
-    }
-
-    // Cleanup old fetch logs (keep last 30 days)
-    const { execute } = await import("./db/client.ts");
-    await execute(
-      `DELETE FROM video_fetch_log WHERE created_at < NOW() - INTERVAL '30 days'`,
-      [],
-    );
-
-    console.log("[CRON] Video reels fetch complete");
-  } catch (error) {
-    console.error("[CRON] Video reels fetch failed:", error);
-  }
-});
-
 console.log("[CRON] Deno cron jobs registered:");
 console.log("  - crawl-news: 6:00, 12:00, 18:00 IST");
 console.log("  - ingest-satellite: Every 6 hours");
@@ -281,4 +240,3 @@ console.log("  - generate-advisories: Every 2 hours");
 console.log("  - sync-market-prices: 8:00 AM IST daily");
 console.log("  - cleanup-old-data: 2:00 AM IST daily");
 console.log("  - update-weather: Every 3 hours");
-console.log("  - fetch-video-reels: Every 12 hours (3 AM, 3 PM IST)");
