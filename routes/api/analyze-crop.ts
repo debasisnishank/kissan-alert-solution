@@ -10,11 +10,16 @@ export const handler: Handlers<unknown, AuthState> = {
     }
 
     try {
-      const { image, farmId, cropType } = await req.json();
+      const { image: rawImage, farmId, cropType } = await req.json();
 
-      if (!image) {
+      if (!rawImage) {
         return Response.json({ error: "Image is required" }, { status: 400 });
       }
+
+      // The client sends a full data URL (canvas.toDataURL /
+      // FileReader.readAsDataURL); Gemini's inline_data.data wants raw
+      // base64 only, no "data:image/jpeg;base64," prefix.
+      const image = rawImage.replace(/^data:[^;]+;base64,/, "");
 
       // Use Gemini to analyze the crop image
       const prompt = `Analyze this crop/plant image and provide:
@@ -88,7 +93,7 @@ Be practical and specific for Indian farming conditions.`;
             session.userId,
             farmId || null,
             cropType || null,
-            image,
+            rawImage,
             result.healthScore ?? null,
             result.cropIdentified ?? null,
             result.confidence ?? null,
