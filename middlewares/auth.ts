@@ -49,27 +49,24 @@ export function clearSessionCookie(headers: Headers): void {
   );
 }
 
+// Populates ctx.state.session/user. Does not call ctx.next() itself — the
+// caller (routes/_middleware.ts) needs to post-process the downstream
+// response (e.g. security headers), so it must be the one to advance the
+// chain and receive the resulting Response.
 export async function authMiddleware(
   req: Request,
   ctx: FreshContext<AuthState>,
-) {
+): Promise<void> {
   const token = getSessionToken(req);
 
   if (token) {
     const result = await validateSessionWithUser(token);
-    if (result) {
-      ctx.state.session = result.session;
-      ctx.state.user = result.user;
-    } else {
-      ctx.state.session = null;
-      ctx.state.user = null;
-    }
+    ctx.state.session = result?.session ?? null;
+    ctx.state.user = result?.user ?? null;
   } else {
     ctx.state.session = null;
     ctx.state.user = null;
   }
-
-  return ctx.next();
 }
 
 export function requireAuth(
