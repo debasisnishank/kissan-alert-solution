@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { calculateEMI } from "$lib/bank.ts";
+import { calculateEMI } from "$lib/emi.ts";
 
 export default function EMICalculator() {
   const [principal, setPrincipal] = useState(100000);

@@ -302,4 +302,12 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
   service_provider: [
     PERMISSIONS.FARM_READ,
   ],
+  bank_officer: [
+    PERMISSIONS.USER_READ,
+    PERMISSIONS.USER_CREATE,
+    PERMISSIONS.USER_UPDATE,
+    PERMISSIONS.FARM_READ,
+    PERMISSIONS.FARM_CREATE,
+    PERMISSIONS.FARM_UPDATE,
+  ],
 };
