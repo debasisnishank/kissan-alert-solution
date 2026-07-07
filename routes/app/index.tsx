@@ -1056,8 +1056,7 @@ export default function HomePage({ data }: PageProps<HomePageData>) {
       {/* Footer */}
       <footer class="text-center py-6 border-t border-gray-100 mt-6">
         <p class="text-sm text-gray-400">
-          <span class="font-semibold text-primary-600">Compass</span>{" "}
-          by Earthnow
+          <span class="font-semibold text-primary-600">Compass</span>
         </p>
         <p class="text-xs text-gray-400 mt-1">
           Empowering farmers with satellite intelligence
