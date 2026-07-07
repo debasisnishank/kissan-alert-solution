@@ -325,7 +325,7 @@ async function exportCSV(
   return new Response(rows.join("\n"), {
     headers: {
       "Content-Type": "text/csv",
-      "Content-Disposition": `attachment; filename="compass-analytics-${
+      "Content-Disposition": `attachment; filename="khetscope-analytics-${
         new Date().toISOString().split("T")[0]
       }.csv"`,
     },
