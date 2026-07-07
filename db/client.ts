@@ -10,17 +10,36 @@ export function getPool(): Pool {
   return pool;
 }
 
+function isConnectionReset(error: unknown): boolean {
+  return error instanceof Error &&
+    ("code" in error && (error as { code?: string }).code === "ECONNRESET" ||
+      error.name === "ConnectionReset");
+}
+
 export async function query<T>(
   sql: string,
   args?: unknown[],
 ): Promise<T[]> {
   const pool = getPool();
-  const client = await pool.connect();
   try {
-    const result = await client.queryObject<T>(sql, args);
-    return result.rows;
-  } finally {
-    client.release();
+    const client = await pool.connect();
+    try {
+      const result = await client.queryObject<T>(sql, args);
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    // Idle pooled connections can be silently dropped in transit (e.g. by the
+    // VPC connector); retry once with a fresh connection instead of a 500.
+    if (!isConnectionReset(error)) throw error;
+    const client = await pool.connect();
+    try {
+      const result = await client.queryObject<T>(sql, args);
+      return result.rows;
+    } finally {
+      client.release();
+    }
   }
 }
 
@@ -37,12 +56,23 @@ export async function execute(
   args?: unknown[],
 ): Promise<number> {
   const pool = getPool();
-  const client = await pool.connect();
   try {
-    const result = await client.queryObject(sql, args);
-    return result.rowCount ?? 0;
-  } finally {
-    client.release();
+    const client = await pool.connect();
+    try {
+      const result = await client.queryObject(sql, args);
+      return result.rowCount ?? 0;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    if (!isConnectionReset(error)) throw error;
+    const client = await pool.connect();
+    try {
+      const result = await client.queryObject(sql, args);
+      return result.rowCount ?? 0;
+    } finally {
+      client.release();
+    }
   }
 }
 
