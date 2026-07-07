@@ -1,4 +1,4 @@
-// Compass PWA Service Worker
+// Khetscope PWA Service Worker
 const CACHE_NAME = "compass-v2";
 const STATIC_ASSETS = [
   "/",
@@ -119,7 +119,7 @@ self.addEventListener("push", (event) => {
   const data = event.data?.json() || {};
 
   const options = {
-    body: data.body || "New advisory from Compass",
+    body: data.body || "New advisory from Khetscope",
     icon: "/icon-192.png",
     badge: "/badge-72.png",
     vibrate: [100, 50, 100],
@@ -133,7 +133,7 @@ self.addEventListener("push", (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title || "Compass Alert", options),
+    self.registration.showNotification(data.title || "Khetscope Alert", options),
   );
 });
 

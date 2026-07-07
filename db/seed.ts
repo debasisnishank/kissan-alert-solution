@@ -28,7 +28,7 @@ async function seed() {
         'admin',
         '+919876543210',
         'Admin User',
-        'admin@compass.app',
+        'admin@khetscope.app',
         'admin',
         'en'
       )
@@ -327,7 +327,7 @@ async function seed() {
         '9876543215',
         '+919876543215',
         'Bank Officer Demo',
-        'bank@compass.app',
+        'bank@khetscope.app',
         'bank_officer',
         'en'
       )

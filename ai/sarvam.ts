@@ -211,7 +211,7 @@ class SarvamAIClient {
 
     // Mock mode for development
     if (!this.apiKey || env.IS_DEV) {
-      const mockAudioUrl = `https://storage.compass.app/audio/mock_${
+      const mockAudioUrl = `https://storage.khetscope.app/audio/mock_${
         textHash.slice(0, 8)
       }.mp3`;
       await this.cacheTTS(textHash, language, voice, mockAudioUrl);
