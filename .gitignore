@@ -1,6 +1,7 @@
 # ── Local-only ────────────────────────────────────────────
 # React Native companion app — kept locally, not part of the repo
-app/
+# (anchored to root: routes/app/ is the actual web app and must be tracked)
+/app/
 # Working notes — only README.md ships
 CLAUDE.md
 HACKATHON_REQUIREMENTS.md
@@ -24,18 +25,18 @@ GoogleService-Info.plist
 
 # ── Dependencies ──────────────────────────────────────────
 node_modules/
-app/ios/Pods/
+/app/ios/Pods/
 vendor/
 
 # ── Build output ──────────────────────────────────────────
 _fresh/
 dist/
 build/
-app/android/.gradle/
-app/android/app/build/
-app/android/build/
-app/ios/build/
-app/ios/DerivedData/
+/app/android/.gradle/
+/app/android/app/build/
+/app/android/build/
+/app/ios/build/
+/app/ios/DerivedData/
 *.apk
 *.aab
 *.ipa

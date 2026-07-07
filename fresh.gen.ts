@@ -54,6 +54,7 @@ import * as $api_leads_token_ from "./routes/api/leads/[token].ts";
 import * as $api_push_register from "./routes/api/push/register.ts";
 import * as $api_push_unregister from "./routes/api/push/unregister.ts";
 import * as $api_recommendations_farmId_ from "./routes/api/recommendations/[farmId].ts";
+import * as $api_scans_id_image from "./routes/api/scans/[id]/image.ts";
 import * as $api_sync from "./routes/api/sync.ts";
 import * as $api_test_db from "./routes/api/test-db.ts";
 import * as $api_tickets_index from "./routes/api/tickets/index.ts";
@@ -84,6 +85,7 @@ import * as $app_profile_edit from "./routes/app/profile/edit.tsx";
 import * as $app_profile_notifications from "./routes/app/profile/notifications.tsx";
 import * as $app_reports from "./routes/app/reports.tsx";
 import * as $app_scan from "./routes/app/scan.tsx";
+import * as $app_scan_history from "./routes/app/scan/history.tsx";
 import * as $app_schemes from "./routes/app/schemes.tsx";
 import * as $app_services from "./routes/app/services.tsx";
 import * as $app_settings from "./routes/app/settings.tsx";
@@ -172,6 +174,7 @@ const manifest = {
     "./routes/api/push/register.ts": $api_push_register,
     "./routes/api/push/unregister.ts": $api_push_unregister,
     "./routes/api/recommendations/[farmId].ts": $api_recommendations_farmId_,
+    "./routes/api/scans/[id]/image.ts": $api_scans_id_image,
     "./routes/api/sync.ts": $api_sync,
     "./routes/api/test-db.ts": $api_test_db,
     "./routes/api/tickets/index.ts": $api_tickets_index,
@@ -202,6 +205,7 @@ const manifest = {
     "./routes/app/profile/notifications.tsx": $app_profile_notifications,
     "./routes/app/reports.tsx": $app_reports,
     "./routes/app/scan.tsx": $app_scan,
+    "./routes/app/scan/history.tsx": $app_scan_history,
     "./routes/app/schemes.tsx": $app_schemes,
     "./routes/app/services.tsx": $app_services,
     "./routes/app/settings.tsx": $app_settings,

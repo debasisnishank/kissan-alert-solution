@@ -1,11 +1,16 @@
 import { Handlers } from "$fresh/server.ts";
 import { llmGenerateWithImage } from "$ai/llm.ts";
+import { queryOne } from "$db/client.ts";
 import type { AuthState } from "../../middlewares/auth.ts";
 
 export const handler: Handlers<unknown, AuthState> = {
   async POST(req, ctx) {
+    if (!ctx.state.session) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     try {
-      const { image, farmId: _farmId } = await req.json();
+      const { image, farmId, cropType } = await req.json();
 
       if (!image) {
         return Response.json({ error: "Image is required" }, { status: 400 });
@@ -39,8 +44,9 @@ Respond in this exact JSON format:
 If you cannot identify issues, return empty arrays for issues and recommendations.
 Be practical and specific for Indian farming conditions.`;
 
+      const { session } = ctx.state;
       const response = await llmGenerateWithImage(
-        ctx.state.session?.tenantId || "default",
+        session.tenantId,
         prompt,
         image,
       );
@@ -69,7 +75,34 @@ Be practical and specific for Indian farming conditions.`;
         };
       }
 
-      return Response.json({ data: result });
+      let scanId: string | null = null;
+      try {
+        const row = await queryOne<{ id: string }>(
+          `INSERT INTO crop_scans
+             (tenant_id, farmer_id, farm_id, crop_type, image_data,
+              health_score, crop_identified, confidence, issues, recommendations)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           RETURNING id`,
+          [
+            session.tenantId,
+            session.userId,
+            farmId || null,
+            cropType || null,
+            image,
+            result.healthScore ?? null,
+            result.cropIdentified ?? null,
+            result.confidence ?? null,
+            JSON.stringify(result.issues ?? []),
+            JSON.stringify(result.recommendations ?? []),
+          ],
+        );
+        scanId = row?.id ?? null;
+      } catch (dbError) {
+        // Show the analysis to the user even if we fail to persist it.
+        console.error("Failed to save crop scan:", dbError);
+      }
+
+      return Response.json({ data: { ...result, scanId } });
     } catch (error) {
       console.error("Crop analysis error:", error);
       return Response.json(

@@ -1107,6 +1107,33 @@ const migrations = [
       DROP TABLE IF EXISTS user_preferences CASCADE;
     `,
   },
+  {
+    version: 13,
+    name: "crop_scans",
+    up: `
+      -- Photo-based crop health scans (routes/app/scan.tsx + /api/analyze-crop)
+      CREATE TABLE IF NOT EXISTS crop_scans (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        tenant_id VARCHAR(50) REFERENCES tenants(id) ON DELETE CASCADE,
+        farmer_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        farm_id UUID REFERENCES farms(id) ON DELETE SET NULL,
+        crop_type VARCHAR(100),
+        image_data TEXT NOT NULL,
+        health_score INTEGER,
+        crop_identified VARCHAR(100),
+        confidence NUMERIC(3, 2),
+        issues JSONB DEFAULT '[]',
+        recommendations JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX idx_crop_scans_farmer ON crop_scans(farmer_id);
+      CREATE INDEX idx_crop_scans_farm ON crop_scans(farm_id);
+      CREATE INDEX idx_crop_scans_tenant ON crop_scans(tenant_id);
+    `,
+    down: `
+      DROP TABLE IF EXISTS crop_scans CASCADE;
+    `,
+  },
 ];
 
 async function migrate() {
