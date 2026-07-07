@@ -15,7 +15,7 @@ async function seed() {
     // Create default tenant
     await client.queryObject(`
       INSERT INTO tenants (id, name, slug, description) 
-      VALUES ('default', 'Compass Demo', 'compass-demo', 'Default demo tenant for Compass platform')
+      VALUES ('default', 'Khetscope Demo', 'khetscope-demo', 'Default demo tenant for Khetscope platform')
       ON CONFLICT (id) DO NOTHING;
     `);
 

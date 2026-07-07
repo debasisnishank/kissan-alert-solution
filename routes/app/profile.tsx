@@ -116,7 +116,7 @@ export default function ProfilePage({ data }: PageProps<ProfileData>) {
       </form>
 
       <p class="text-center text-xs text-gray-400 mt-6">
-        Compass v1.0.0
+        Khetscope v1.0.0
       </p>
     </AppShell>
   );

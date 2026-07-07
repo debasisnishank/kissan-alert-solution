@@ -200,7 +200,7 @@ export default function HelpPage() {
 
       {/* App Info */}
       <div class="mt-6 text-center text-sm text-gray-500">
-        <p>Compass Agricultural Advisory Platform</p>
+        <p>Khetscope Agricultural Advisory Platform</p>
         <p>Version 1.0.0</p>
         <p class="mt-2">
           <a href="/app/settings" class="text-primary-600">Settings</a>

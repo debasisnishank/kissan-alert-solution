@@ -1,4 +1,4 @@
-// Deno Cron Jobs for Compass Agricultural Platform
+// Deno Cron Jobs for Khetscope Agricultural Platform
 //
 // NOTE: This file uses Deno.cron which is an UNSTABLE API
 // To use this file, you need to:

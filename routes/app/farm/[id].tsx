@@ -7,11 +7,7 @@ import {
 } from "$lib/observations.ts";
 import { getAlertsWithAdvisory } from "$lib/alerts.ts";
 import { getDailyWeather } from "$lib/satellite/weather.ts";
-import {
-  type FarmSoilData,
-  getFarmSoilData,
-  getSoilScore,
-} from "$lib/soil.ts";
+import { type FarmSoilData, getFarmSoilData, getSoilScore } from "$lib/soil.ts";
 import { query } from "$db/client.ts";
 import type { AuthState } from "../../../middlewares/auth.ts";
 import NDVIChart from "$islands/NDVIChart.tsx";
@@ -1310,7 +1306,7 @@ export default function FarmDetailPage({ data }: PageProps<FarmDetailData>) {
               <body>
                 <div class="header">
                   <div class="header-left">
-                    <h1>🌾 Compass Farm Report</h1>
+                    <h1>🌾 Khetscope Farm Report</h1>
                     <p>Satellite-Based Agricultural Intelligence</p>
                   </div>
                   <div class="header-right">
@@ -1532,7 +1528,7 @@ export default function FarmDetailPage({ data }: PageProps<FarmDetailData>) {
                 
                 <div class="footer">
                   <div class="footer-left">
-                    <strong>Compass</strong> - Satellite-based Agricultural Advisory Platform<br/>
+                    <strong>Khetscope</strong> - Satellite-based Agricultural Advisory Platform<br/>
                     Empowering farmers with intelligent insights
                   </div>
                   <div class="footer-right">

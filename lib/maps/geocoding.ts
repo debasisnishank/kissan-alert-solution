@@ -59,7 +59,7 @@ export async function geocodeNominatim(
 
   const response = await fetch(url.toString(), {
     headers: {
-      "User-Agent": "Compass-Agri-App/1.0",
+      "User-Agent": "Khetscope-Agri-App/1.0",
     },
   });
 
@@ -110,7 +110,7 @@ export async function reverseGeocodeNominatim(
 
   const response = await fetch(url.toString(), {
     headers: {
-      "User-Agent": "Compass-Agri-App/1.0",
+      "User-Agent": "Khetscope-Agri-App/1.0",
     },
   });
 

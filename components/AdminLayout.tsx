@@ -136,7 +136,7 @@ export function AdminLayout(
                 </svg>
               </div>
               <div>
-                <span class="text-white font-bold text-sm">Compass</span>
+                <span class="text-white font-bold text-sm">Khetscope</span>
                 <span class="block text-xs text-gray-500">Admin Panel</span>
               </div>
             </a>

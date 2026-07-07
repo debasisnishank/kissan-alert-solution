@@ -1,4 +1,4 @@
-# Compass - Satellite-Based Agricultural Advisory Platform
+# Khetscope - Satellite-Based Agricultural Advisory Platform
 
 A production-ready, multi-tenant agricultural advisory platform for Indian
 farmers. Combines free satellite data, AI-powered crop analysis, and real-time

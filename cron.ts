@@ -1,4 +1,4 @@
-// Deno Cron Jobs for Compass Agricultural Platform
+// Deno Cron Jobs for Khetscope Agricultural Platform
 // These run automatically on Deno Deploy
 //
 // Cron syntax: "minute hour day month weekday"

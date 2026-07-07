@@ -230,7 +230,7 @@ export const handler: Handlers<NotifPageData, AuthState> = {
 
 const ICONS = [
   ["ic_notification", "Default Bell"],
-  ["ic_stat_compass", "Compass"],
+  ["ic_stat_compass", "Khetscope"],
   ["ic_weather", "Weather"],
   ["ic_alert", "Alert"],
   ["ic_crop", "Crop"],
@@ -561,7 +561,7 @@ export default function NotificationsPage(
                 </div>
                 <div class="min-w-0">
                   <div class="text-xs font-semibold text-gray-900">
-                    Compass
+                    Khetscope
                   </div>
                   <div class="text-xs font-medium text-gray-800 mt-0.5">
                     Your title appears here

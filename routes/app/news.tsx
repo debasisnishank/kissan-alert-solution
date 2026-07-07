@@ -79,7 +79,7 @@ export const handler: Handlers<NewsPageData, AuthState> = {
           title: n.title,
           summary: n.summary || "",
           category: n.category || "general",
-          source: n.source || "Compass",
+          source: n.source || "Khetscope",
           sourceUrl: n.source_url,
           publishedAt: new Date(n.published_at).toLocaleDateString("en-IN", {
             day: "numeric",

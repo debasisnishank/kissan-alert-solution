@@ -318,7 +318,7 @@ async function geocodeFallback(
       encodeURIComponent(address)
     }&format=json&limit=1&countrycodes=in`;
     const response = await fetch(url, {
-      headers: { "User-Agent": "Compass/1.0" },
+      headers: { "User-Agent": "Khetscope/1.0" },
     });
     const data = await response.json();
     const result = data[0];
@@ -350,7 +350,7 @@ async function reverseGeocodeFallback(
     const url =
       `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
     const response = await fetch(url, {
-      headers: { "User-Agent": "Compass/1.0" },
+      headers: { "User-Agent": "Khetscope/1.0" },
     });
     const result = await response.json();
 

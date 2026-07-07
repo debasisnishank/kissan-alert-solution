@@ -1,6 +1,6 @@
 {
-  "name": "Compass - Smart Farming Advisory",
-  "short_name": "Compass",
+  "name": "Khetscope - Smart Farming Advisory",
+  "short_name": "Khetscope",
   "description": "Satellite-based agricultural advisory platform for Indian farmers",
   "start_url": "/app",
   "display": "standalone",

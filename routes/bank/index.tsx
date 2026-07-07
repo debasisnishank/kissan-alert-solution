@@ -138,7 +138,7 @@ export default function BankDashboard({ data }: PageProps<BankDashboardData>) {
                   Bank Officer Portal
                 </h1>
                 <p class="text-sm text-gray-500">
-                  Compass Agricultural Credit Assessment
+                  Khetscope Agricultural Credit Assessment
                 </p>
               </div>
             </div>

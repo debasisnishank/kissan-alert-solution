@@ -106,7 +106,7 @@ Deno.addSignalListener("SIGTERM", () => {
 });
 
 // Start worker
-console.log("[WORKER] Compass Worker starting...");
+console.log("[WORKER] Khetscope Worker starting...");
 console.log(
   `[WORKER] Registered job types: ${Object.keys(JOB_HANDLERS).join(", ")}`,
 );

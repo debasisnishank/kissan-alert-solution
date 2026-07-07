@@ -1,4 +1,4 @@
-export const SITE_NAME = "Compass";
+export const SITE_NAME = "Khetscope";
 export const SITE_DESCRIPTION =
   "Field-level digital advisory system for Indian agriculture";
 export const SITE_LOCALE = "en-IN";
