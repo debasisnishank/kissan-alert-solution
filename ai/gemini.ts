@@ -156,7 +156,9 @@ class GeminiClient {
           "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
-          contents: [{ parts }],
+          // Unlike the AI Studio API, Vertex AI requires an explicit role
+          // on every content entry.
+          contents: [{ role: "user", parts }],
           generationConfig,
         }),
       });
