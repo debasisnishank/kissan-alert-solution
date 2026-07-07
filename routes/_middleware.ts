@@ -13,6 +13,22 @@ function securityHeaders(headers: Headers): void {
   );
 }
 
+const STATIC_ASSET_RE = /\.(css|png|jpg|jpeg|svg|ico|json|webmanifest)$/;
+
+// Static assets aren't content-hashed, so avoid `immutable`; a short max-age
+// with stale-while-revalidate skips the round-trip on repeat loads while
+// still picking up changes soon after a deploy.
+function cacheHeaders(pathname: string, headers: Headers): void {
+  if (pathname === "/sw.js") {
+    headers.set("Cache-Control", "no-cache");
+  } else if (STATIC_ASSET_RE.test(pathname)) {
+    headers.set(
+      "Cache-Control",
+      "public, max-age=300, stale-while-revalidate=86400",
+    );
+  }
+}
+
 export async function handler(
   req: Request,
   ctx: FreshContext<AuthState>,
@@ -30,6 +46,9 @@ export async function handler(
 
   // Add security headers
   securityHeaders(response.headers);
+  if (req.method === "GET" && response.status === 200) {
+    cacheHeaders(new URL(req.url).pathname, response.headers);
+  }
 
   return response;
 }

@@ -13,6 +13,12 @@ export default function App({ Component }: PageProps) {
       </head>
       <body>
         <Component />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              `if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js")); }`,
+          }}
+        />
       </body>
     </html>
   );
