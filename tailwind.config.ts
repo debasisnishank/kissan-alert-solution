@@ -49,6 +49,8 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "Noto Sans Devanagari", "system-ui", "sans-serif"],
+        display: ["Fraunces", "Georgia", "serif"],
+        tech: ["'Space Mono'", "ui-monospace", "SFMono-Regular", "monospace"],
       },
     },
   },
