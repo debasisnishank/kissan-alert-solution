@@ -18,8 +18,6 @@ weather to deliver personalized farm recommendations as an installable web PWA.
   farm, crop, weather)
 - **Weather Intelligence** - 7-day forecast, rainfall, irrigation advisories
   (Open-Meteo, free)
-- **Video Reels** - TikTok-style agricultural education videos (YouTube Data
-  API)
 - **Alerts & Advisories** - Push notifications for weather, pest, market events
 - **Voice Advisories** - Listen in 11 Indian languages (Sarvam AI TTS)
 - **Government Schemes** - Browse eligible schemes with deadlines
@@ -37,7 +35,6 @@ weather to deliver personalized farm recommendations as an installable web PWA.
 - **User Management** - Create, edit, toggle active, reset passwords, role
   assignment
 - **Alert Management** - Create bulk alerts by district/crop/farm targeting
-- **Video Reels Management** - Fetch, toggle visibility, delete YouTube videos
 - **News Management** - Crawl, manage agricultural news articles
 - **Scheme & Product Management** - Full CRUD for government schemes and agri
   products
@@ -58,7 +55,6 @@ weather to deliver personalized farm recommendations as an installable web PWA.
 | Translation   | Sarvam AI (11 languages, TTS)                       |
 | Satellite     | Element 84 Earth Search (free, Sentinel-2, Landsat) |
 | Weather       | Open-Meteo (free, no API key)                       |
-| Videos        | YouTube Data API v3                                 |
 | Push          | Firebase Cloud Messaging (FCM v1 HTTP API)          |
 | CSS           | Tailwind CSS 3.4                                    |
 | Maps          | Leaflet + ISRO Bhuvan WMS layers                    |
@@ -77,7 +73,7 @@ weather to deliver personalized farm recommendations as an installable web PWA.
 
 ```bash
 git clone <repo-url>
-cd compass-deno
+cd kissan-alert-solution
 cp .env.example .env
 ```
 
@@ -110,7 +106,7 @@ automatically.
 deno task db:migrate
 ```
 
-This applies all 12 migrations creating 40+ tables.
+This applies all 13 migrations creating 44+ tables.
 
 ### 4. Seed Demo Data
 
@@ -165,7 +161,7 @@ Default credentials after seeding:
 ## Project Structure
 
 ```
-compass-deno/
+kissan-alert-solution/
 ├── ai/                          # AI integrations
 │   ├── gemini.ts                # Gemini: analysis, chat, vision
 │   ├── sarvam.ts                # Sarvam: translation, TTS
@@ -175,19 +171,17 @@ compass-deno/
 │   └── AdminLayout.tsx          # Admin sidebar layout
 ├── db/                          # Database layer
 │   ├── client.ts                # PostgreSQL pool + query helpers
-│   ├── migrate.ts               # 10 versioned migrations
+│   ├── migrate.ts               # 13 versioned migrations
 │   └── seed.ts                  # Demo data seeder
 ├── islands/                     # Interactive Preact islands
 │   ├── FarmMap.tsx              # Leaflet map with drawing
-│   ├── VideoReels.tsx           # TikTok-style reels player
 │   ├── LoginForm.tsx            # Auth forms
 │   └── ...                      # 14+ islands
 ├── lib/                         # Business logic
 │   ├── auth.ts                  # Auth: hashing, sessions, cache
 │   ├── leads.ts                 # CRM lead scoring & export
 │   ├── notifications.ts         # FCM push notification sender
-│   ├── news/crawler.ts          # RSS news aggregator
-│   └── videos/youtube.ts        # YouTube video fetcher
+│   └── news/crawler.ts          # RSS news aggregator
 ├── middlewares/                  # Fresh middleware
 │   └── auth.ts                  # Session validation + caching
 ├── routes/
@@ -195,13 +189,11 @@ compass-deno/
 │   │   ├── index.tsx            # Dashboard
 │   │   ├── leads.tsx            # CRM leads + export
 │   │   ├── notifications.tsx    # Push notification composer
-│   │   ├── reels.tsx            # Video management
 │   │   ├── news.tsx             # News management
 │   │   └── ...                  # Users, farms, alerts, etc.
 │   ├── api/                     # REST API endpoints
 │   │   ├── auth/                # Login, register, logout
 │   │   ├── farms/               # CRUD + observations
-│   │   ├── reels/               # Video reels + fetch
 │   │   ├── leads/               # Shareable CRM lead links
 │   │   ├── push/                # FCM token register/unregister
 │   │   └── ...                  # Chat, alerts, crops, weather
@@ -242,14 +234,11 @@ compass-deno/
 | POST   | `/api/analyze-crop`            | Camera image analysis     |
 | GET    | `/api/recommendations/:farmId` | AI recommendations        |
 
-### Content
+### Alerts
 
-| Method | Endpoint          | Description           |
-| ------ | ----------------- | --------------------- |
-| GET    | `/api/reels`      | Paginated video reels |
-| POST   | `/api/reels/view` | Track video view      |
-| POST   | `/api/reels/like` | Like/unlike video     |
-| GET    | `/api/alerts`     | User's active alerts  |
+| Method | Endpoint      | Description          |
+| ------ | ------------- | -------------------- |
+| GET    | `/api/alerts` | User's active alerts |
 
 ### Push Notifications
 
@@ -275,10 +264,16 @@ compass-deno/
 
 ### AI Services
 
-| Variable         | Description                   | Required    |
-| ---------------- | ----------------------------- | ----------- |
-| `GEMINI_API_KEY` | Google Gemini API key         | Recommended |
-| `SARVAM_API_KEY` | Sarvam AI for translation/TTS | Optional    |
+Gemini runs through Vertex AI, authenticated as the runtime's own GCP identity
+-- there's no API key to set. Locally, run
+`gcloud auth application-default login` once; on Cloud Run, the service
+account's IAM roles (`aiplatform.user`, `speech.client`) handle it.
+
+| Variable               | Description                          | Required    |
+| ---------------------- | ------------------------------------ | ----------- |
+| `GOOGLE_CLOUD_PROJECT` | GCP project ID for Vertex AI/STT     | Recommended |
+| `VERTEX_AI_LOCATION`   | Vertex AI region (default: `global`) | Optional    |
+| `SARVAM_API_KEY`       | Sarvam AI for translation/TTS        | Optional    |
 
 ### Push Notifications (Firebase)
 
@@ -287,13 +282,6 @@ compass-deno/
 | `FCM_PROJECT_ID`            | Firebase project ID               |
 | `FCM_SERVICE_ACCOUNT_EMAIL` | Service account email             |
 | `FCM_PRIVATE_KEY`           | Service account private key (PEM) |
-
-### Content APIs
-
-| Variable                     | Description                   |
-| ---------------------------- | ----------------------------- |
-| `YOUTUBE_API_KEY`            | YouTube Data API v3 key       |
-| `FACEBOOK_PAGE_ACCESS_TOKEN` | Facebook Graph API (optional) |
 
 ### Feature Flags
 
@@ -305,15 +293,14 @@ compass-deno/
 
 ## Database Schema
 
-10 migrations creating 39+ tables across domains:
+13 migrations creating 44+ tables across domains:
 
 - **Multi-tenancy**: `tenants`, `users`, `sessions`
 - **Farm Management**: `farms`, `farm_crops`, `crop_declarations`,
   `farm_observations`, `farm_activity_logs`, `farm_calendar_events`
 - **Satellite**: `satellite_products`
 - **Alerts**: `alerts`, `alert_schedules`, `advisory_messages`
-- **Content**: `video_sources`, `video_views`, `video_fetch_log`,
-  `news_articles`, `content_items`
+- **Content**: `news_articles`, `content_items`
 - **Commerce**: `agri_products`, `manufacturers`, `product_recommendations`,
   `market_prices`, `dealers`
 - **Government**: `government_schemes`, `schemes`, `farmer_scheme_matches`
@@ -326,29 +313,35 @@ compass-deno/
 
 ## Cron Jobs
 
-8 scheduled background tasks:
+7 scheduled background tasks:
 
-| Schedule  | Job                   | Description                      |
-| --------- | --------------------- | -------------------------------- |
-| Every 6h  | `ingest-satellite`    | Fetch satellite catalog updates  |
-| Every 12h | `extract-features`    | Extract NDVI/EVI from imagery    |
-| Every 8h  | `generate-advisories` | Run AI advisory engine           |
-| Every 6h  | `weather-alerts`      | Check weather and issue alerts   |
-| Every 8h  | `crawl-news`          | Fetch agricultural news from RSS |
-| Every 12h | `fetch-video-reels`   | Fetch YouTube agriculture videos |
-| Daily 6AM | `market-prices`       | Update mandi market prices       |
-| Every 4h  | `cleanup-sessions`    | Remove expired sessions          |
+| Schedule | Job                   | Description                      |
+| -------- | --------------------- | -------------------------------- |
+| Every 6h | `ingest-satellite`    | Fetch satellite catalog updates  |
+| Every 4h | `extract-features`    | Extract NDVI/EVI from imagery    |
+| Every 2h | `generate-advisories` | Run AI advisory engine           |
+| Every 3h | `update-weather`      | Refresh weather data             |
+| 3x daily | `crawl-news`          | Fetch agricultural news from RSS |
+| Daily    | `sync-market-prices`  | Update mandi market prices       |
+| Daily    | `cleanup-old-data`    | Remove stale/expired records     |
 
 ## Deployment
 
-### Deno Deploy
+### Google Cloud Run
+
+Every push to `main` triggers `.github/workflows/deploy-cloud-run.yml`, which
+authenticates via Workload Identity Federation (no long-lived key) and runs:
 
 ```bash
-# Push to GitHub, connect repo at https://dash.deno.com
-# Set environment variables in the Deno Deploy dashboard
+gcloud run deploy compass \
+  --source . \
+  --region asia-south1 \
+  --set-secrets APP_SECRET=app-secret:latest,DATABASE_URL=database-url:latest
 ```
 
-Environment variables are set in the Deno Deploy dashboard (not `.env` files).
+`APP_SECRET` and `DATABASE_URL` come from Secret Manager, not `.env`. Gemini and
+Cloud STT need no secret at all -- the Cloud Run service account is granted the
+`aiplatform.user` and `speech.client` IAM roles directly.
 
 ### Docker
 
@@ -360,13 +353,13 @@ docker-compose up -d
 
 - [ ] Set strong `APP_SECRET` (64+ random characters)
 - [ ] Configure `DATABASE_URL` with SSL
-- [ ] Set `GEMINI_API_KEY` for AI features
+- [ ] Grant the service account `aiplatform.user` and `speech.client` IAM roles
+      for Gemini/STT
 - [ ] Set `FCM_*` variables for push notifications
-- [ ] Set `YOUTUBE_API_KEY` for video reels
 - [ ] Run `deno task db:migrate` on production database
 - [ ] Configure HTTPS/TLS termination
 - [ ] Set up database backups
-- [ ] Monitor with Deno Deploy analytics
+- [ ] Monitor with Cloud Run metrics/logs
 
 ## License
 
