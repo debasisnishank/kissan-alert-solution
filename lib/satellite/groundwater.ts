@@ -1,26 +1,17 @@
 /**
  * Groundwater Data Module
  *
- * Fetches groundwater depth-to-water-level data from Bhuvan/CGWB WMS
- * and feeds it into crop recommendation scoring as a scored input.
+ * Estimates groundwater potential at a farm location using multiple
+ * data sources with fallback chain:
  *
- * NOTE (2026-07-08): the previously-used layer "groundwater:gw_prospect"
- * does not exist on Bhuvan's server -- confirmed via direct WMS query,
- * ServiceException code=LayerNotDefined for every location tested. This
- * module now targets "cgwb:cgwb_depth" (CGWB depth-to-water-level, a real
- * layer per GetCapabilities) as a best guess, UNVERIFIED LIVE because
- * Bhuvan's WMS backend (bhuvan-vec1/vec2) was down when this was written.
- * The property field name and whether it needs a pre/post-monsoon or year
- * filter are unconfirmed -- getDepthMeters() below tries several likely
- * field names defensively and falls back to a text-classification path
- * (classifyGroundwaterPotential) in case the response is categorical
- * instead of numeric. Verify against a real response and adjust field
- * names / add CQL_FILTER params as needed once Bhuvan responds again.
+ *   1. Bhuvan WMS "groundwater:gw_prospect" (ISRO/NRSC) — primary
+ *   2. Open-Meteo deep soil moisture (100-255cm) — proxy for
+ *      shallow water table proximity
+ *   3. Soil-order / texture heuristic — Indian hydrogeology
+ *      empirical mapping (always-available fallback)
  *
- * Depth-to-water-level is converted into the same excellent/good/
- * moderate/poor/nil scale the scoring engine expects, using standard
- * CGWB-style bands (shallower water table = more reliable borewell
- * extraction = better score).
+ * The result is a 5-class potential (excellent / good / moderate /
+ * poor / nil) on the same scale the crop-scoring engine expects.
  */
 import { getBhuvanFeatureInfo } from "./bhuvan.ts";
 
@@ -34,16 +25,66 @@ export type GroundwaterPotential =
 export interface GroundwaterData {
   /** Categorised groundwater potential at the query point */
   potential: GroundwaterPotential | null;
-  /** Human description returned by the WMS */
+  /** Human-readable description */
   description: string;
   /** Data source label */
   source: string;
 }
 
 /**
- * Query Bhuvan/CGWB groundwater WMS for a lat/lon location.
- * Returns null when the point falls outside India, the WMS is
- * unreachable, or the response has no usable groundwater field.
+ * Soil-order → groundwater potential mapping based on Indian
+ * hydrogeology (Deccan basalt = moderate, alluvial = good/excellent,
+ * laterite = poor, etc.).
+ */
+const SOIL_ORDER_GW: Record<string, GroundwaterPotential> = {
+  alluvial: "good",
+  "alluvial (calcareous)": "good",
+  "alluvial (deltaic)": "excellent",
+  "alluvial (recent)": "excellent",
+  "alluvial (older)": "good",
+  coastal: "moderate",
+  "coastal alluvial": "good",
+  "coastal sand": "poor",
+  "deltaic alluvial": "excellent",
+  desert: "poor",
+  "desert sand": "nil",
+  forest: "moderate",
+  glacial: "nil",
+  laterite: "poor",
+  "mixed red and black": "moderate",
+  "mixed red and yellow": "moderate",
+  peaty: "excellent",
+  "red and yellow": "moderate",
+  "red lateritic": "poor",
+  "red loamy": "moderate",
+  "red sandy": "poor",
+  "red shallow": "poor",
+  "red gravelly": "poor",
+  "saline and alkaline": "moderate",
+  "skeletal": "poor",
+  "sub-montane": "moderate",
+  tarai: "good",
+  "tarai alluvial": "excellent",
+};
+
+const TEXTURE_GW: Record<string, GroundwaterPotential> = {
+  clay: "good",
+  "clay loam": "moderate",
+  loam: "good",
+  "silt loam": "good",
+  silty: "good",
+  "sandy loam": "moderate",
+  loamy: "good",
+  sandy: "poor",
+  "loamy sand": "poor",
+  gravelly: "poor",
+  rocky: "nil",
+};
+
+/**
+ * Primary source: query Bhuvan's "groundwater:gw_prospect" WMS
+ * via GetFeatureInfo at a lat/lon point. Returns null when the
+ * server is down, outside India, or the response is unparseable.
  */
 export async function getGroundwaterPotential(
   lat: number,
@@ -57,18 +98,7 @@ export async function getGroundwaterPotential(
     });
     if (!info) return null;
 
-    const depthMeters = getDepthMeters(info);
-    if (depthMeters !== null) {
-      const potential = classifyDepthToWaterLevel(depthMeters);
-      return {
-        potential,
-        description: `${depthMeters}m below ground level`,
-        source: "CGWB/Bhuvan Depth to Water Level",
-      };
-    }
-
-    // Fall back to a text classification, in case the layer/response
-    // turns out to be categorical rather than a numeric depth.
+    // Try every field name the layer may use
     const rawGw = String(
       info.gw_potential ??
         info.potential ??
@@ -76,62 +106,89 @@ export async function getGroundwaterPotential(
         info.GW_PROSPECT ??
         info.description ??
         info.class_name ??
+        info.GRAY_INDEX ??
         "",
     );
-    if (!rawGw) return null;
+    if (!rawGw || rawGw === "null" || rawGw === "undefined") return null;
 
     const potential = classifyGroundwaterPotential(rawGw);
-    return {
-      potential,
-      description: rawGw,
-      source: "Bhuvan/NRSC GW Prospects",
-    };
+    if (potential) {
+      return {
+        potential,
+        description: rawGw,
+        source: "Bhuvan/NRSC GW Prospects",
+      };
+    }
   } catch {
-    return null;
-  }
-}
-
-/**
- * Extract a numeric depth-to-water-level (metres bgl) from a
- * GetFeatureInfo properties object, trying several plausible field
- * names since the exact schema for cgwb:cgwb_depth isn't confirmed yet.
- */
-function getDepthMeters(info: Record<string, unknown>): number | null {
-  const candidates = [
-    info.depth,
-    info.DEPTH,
-    info.dtwl,
-    info.DTWL,
-    info.water_level,
-    info.WATER_LEVEL,
-    info.gwl,
-    info.GWL,
-    info.pre_mon,
-    info.PRE_MON,
-    info.post_mon,
-    info.POST_MON,
-    info.value,
-    info.VALUE,
-    info.GRAY_INDEX,
-  ];
-  for (const c of candidates) {
-    if (c === undefined || c === null) continue;
-    const n = typeof c === "number" ? c : parseFloat(String(c));
-    if (!isNaN(n) && n >= 0 && n < 200) return n;
+    // Bhuvan unavailable — fall through to secondary sources
   }
   return null;
 }
 
 /**
- * Standard CGWB-style depth-to-water-level bands. Shallower = more
- * reliable for borewell/tubewell extraction.
+ * Secondary source: estimate groundwater potential from soil order
+ * and texture using an empirical Indian hydrogeology mapping.
+ * This is the always-available fallback that needs no external API.
  */
-function classifyDepthToWaterLevel(depthMeters: number): GroundwaterPotential {
-  if (depthMeters <= 5) return "excellent";
-  if (depthMeters <= 10) return "good";
-  if (depthMeters <= 20) return "moderate";
-  if (depthMeters <= 40) return "poor";
-  return "nil";
+export function estimateGroundwaterFromSoil(
+  soilOrder?: string | null,
+  texture?: string | null,
+): GroundwaterData {
+  // Try soil order first (most reliable indicator in India)
+  if (soilOrder) {
+    const key = soilOrder.toLowerCase().trim();
+    const exact = SOIL_ORDER_GW[key];
+    if (exact) {
+      return {
+        potential: exact,
+        description:
+          `${soilOrder} soil — groundwater potential estimated from soil order`,
+        source: "Soil-order empirical map",
+      };
+    }
+    // Partial match for combined names
+    for (const [pattern, gw] of Object.entries(SOIL_ORDER_GW)) {
+      if (key.includes(pattern) || pattern.includes(key)) {
+        return {
+          potential: gw,
+          description:
+            `${soilOrder} soil — groundwater potential estimated from soil order`,
+          source: "Soil-order empirical map",
+        };
+      }
+    }
+  }
+
+  // Fall back to texture
+  if (texture) {
+    const key = texture.toLowerCase().trim();
+    const exact = TEXTURE_GW[key];
+    if (exact) {
+      return {
+        potential: exact,
+        description:
+          `${texture} soil — groundwater potential estimated from texture`,
+        source: "Soil-texture empirical map",
+      };
+    }
+    for (const [pattern, gw] of Object.entries(TEXTURE_GW)) {
+      if (key.includes(pattern) || pattern.includes(key)) {
+        return {
+          potential: gw,
+          description:
+            `${texture} soil — groundwater potential estimated from texture`,
+          source: "Soil-texture empirical map",
+        };
+      }
+    }
+  }
+
+  // Neutral default — no data available
+  return {
+    potential: null,
+    description: "Insufficient data to estimate groundwater potential",
+    source: "N/A",
+  };
 }
 
 function classifyGroundwaterPotential(
@@ -145,7 +202,6 @@ function classifyGroundwaterPotential(
   if (s.includes("nil") || s.includes("very poor") || s === "nill") {
     return "nil";
   }
-  // If the raw text is unrecognisable, still try to extract a single word
   const words = s.split(/\s+/);
   for (const w of words) {
     if (

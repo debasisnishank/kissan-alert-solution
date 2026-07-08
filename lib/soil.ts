@@ -16,6 +16,7 @@ import {
   getSoilHealthRecommendations,
 } from "$lib/satellite/bhuvan_soil.ts";
 import {
+  estimateGroundwaterFromSoil,
   getGroundwaterPotential,
   type GroundwaterData,
 } from "$lib/satellite/groundwater.ts";
@@ -226,6 +227,16 @@ export async function getFarmSoilData(params: {
   }
   if (!potassium) {
     potassium = determineNutrientStatus(healthScore, soilType, "K", seed + 5);
+  }
+
+  // Groundwater fallback: if Bhuvan WMS didn't return data, estimate
+  // from soil order / texture (always available, no API call needed).
+  if (!groundwater) {
+    const est = estimateGroundwaterFromSoil(soilOrder, texture);
+    if (est.potential) {
+      groundwater = est;
+      sources.push(`GW est. (${est.source})`);
+    }
   }
 
   if (sources.length === 0) {
