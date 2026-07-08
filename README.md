@@ -45,19 +45,52 @@ weather to deliver personalized farm recommendations as an installable web PWA.
 
 ## Tech Stack
 
-| Layer         | Technology                                          |
-| ------------- | --------------------------------------------------- |
-| Runtime       | Deno 2.0+                                           |
-| Web Framework | Fresh 1.6 (Preact, SSR)                             |
-| Database      | PostgreSQL 16 + PostGIS                             |
-| Auth          | Username/password, PBKDF2 hashing, session tokens   |
-| AI            | Google Gemini 2.0 Flash (analysis, chat, vision)    |
-| Translation   | Sarvam AI (11 languages, TTS)                       |
-| Satellite     | Element 84 Earth Search (free, Sentinel-2, Landsat) |
-| Weather       | Open-Meteo (free, no API key)                       |
-| Push          | Firebase Cloud Messaging (FCM v1 HTTP API)          |
-| CSS           | Tailwind CSS 3.4                                    |
-| Maps          | Leaflet + ISRO Bhuvan WMS layers                    |
+| Layer             | Technology                                                                                                                                            |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime           | Deno 2.0+                                                                                                                                             |
+| Web Framework     | Fresh 1.6 (Preact 10, SSR, islands architecture)                                                                                                      |
+| Database          | PostgreSQL 16+ with PostGIS                                                                                                                           |
+| Validation        | Zod                                                                                                                                                   |
+| Job Queue         | PostgreSQL-backed (`FOR UPDATE SKIP LOCKED`, no external queue)                                                                                       |
+| Auth              | Username/password, PBKDF2 hashing, session cookies                                                                                                    |
+| AI                | Google Gemini 2.0 Flash via Vertex AI (analysis, chat, vision)                                                                                        |
+| Speech-to-Text    | Google Cloud Speech-to-Text, with Gemini audio as fallback                                                                                            |
+| Translation/TTS   | Sarvam AI (11 Indian languages)                                                                                                                       |
+| Earth Observation | Element 84 Earth Search + Microsoft Planetary Computer (fallback), Copernicus Data Space, NASA GIBS, ISRO Bhuvan -- see [Data Sources](#data-sources) |
+| Weather           | Open-Meteo (primary), NASA POWER (agro-climatology)                                                                                                   |
+| Soil              | ISRO Bhuvan/NBSS (India), SoilGrids/ISRIC (global fallback)                                                                                           |
+| Market Prices     | data.gov.in / Agmarknet, eNAM (fallback)                                                                                                              |
+| Maps              | Leaflet, ISRO Bhuvan WMS layers, Ola Maps (Indian geocoding)                                                                                          |
+| Push              | Firebase Cloud Messaging (FCM v1 HTTP API)                                                                                                            |
+| CSS               | Tailwind CSS 3.4                                                                                                                                      |
+| Testing           | Deno's built-in test runner, k6 load tests                                                                                                            |
+| Deployment        | Google Cloud Run via GitHub Actions (Workload Identity Federation)                                                                                    |
+
+## Data Sources
+
+Every data source is free/public -- no paid satellite or weather API, per the
+platform's public-data-only constraint. Each domain has its own fallback chain
+(`lib/satellite/`, `lib/soil.ts`) so a single provider outage degrades quality
+rather than breaking the feature:
+
+- **Satellite imagery (Sentinel-2, Landsat)**:
+  [Element 84 Earth Search](https://earth-search.aws.element84.com) (primary,
+  free STAC API) ->
+  [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com)
+  (fallback)
+- **Additional imagery/map layers**:
+  [Copernicus Data Space](https://dataspace.copernicus.eu) (Sentinel Hub WMS),
+  [NASA GIBS](https://gibs.earthdata.nasa.gov) (MODIS/GPM/SMAP tiles),
+  [ISRO Bhuvan](https://bhuvan.nrsc.gov.in) (Indian thematic layers)
+- **Weather**: [Open-Meteo](https://open-meteo.com) (primary, no auth) ->
+  [NASA POWER](https://power.larc.nasa.gov) (agricultural
+  meteorology/climatology)
+- **Soil**: ISRO Bhuvan/NBSS (India-specific) ->
+  [SoilGrids/ISRIC](https://soilgrids.org) (global 250m) -> Open-Meteo soil
+  moisture -> deterministic fallback
+- **Market prices**: [data.gov.in](https://data.gov.in) / Agmarknet ->
+  [eNAM](https://enam.gov.in) (fallback) -> cached static data
+- **Geocoding**: Ola Maps -> OSM/Nominatim fallback
 
 ## Quick Start
 
