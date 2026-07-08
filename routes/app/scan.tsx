@@ -117,8 +117,8 @@ export default function ScanPage({ data }: PageProps<ScanPageData>) {
             <span>🎙</span> Or describe the problem by voice
           </h3>
           <p class="text-xs text-gray-500 mb-3">
-            Speak in Odia, Hindi or English — we transcribe, diagnose, and can
-            forward it to an expert
+            Speak in Hindi or English — we transcribe, diagnose, and can forward
+            it to an expert
           </p>
           <VoiceLogger cropType={cropType ?? undefined} />
         </div>
