@@ -15,6 +15,13 @@ function homeForRole(role?: string): string {
   }
 }
 
+// Seeded demo accounts (db/seed.ts) -- all share DEMO_PASSWORD there.
+const DEMO_ACCOUNTS = [
+  { label: "Farmer", username: "9876543211", password: "Demo@1234" },
+  { label: "Bank Officer", username: "9876543215", password: "Demo@1234" },
+  { label: "Admin", username: "admin", password: "Demo@1234" },
+];
+
 export default function LoginForm() {
   const [step, setStep] = useState<Step>("login");
   const [username, setUsername] = useState("");
@@ -24,6 +31,7 @@ export default function LoginForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -56,6 +64,31 @@ export default function LoginForm() {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async (account: typeof DEMO_ACCOUNTS[number]) => {
+    setError("");
+    setDemoLoading(account.label);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "login",
+          username: account.username,
+          password: account.password,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Demo login failed");
+
+      globalThis.location.href = homeForRole(data.user?.role);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      setDemoLoading(null);
     }
   };
 
@@ -204,6 +237,27 @@ export default function LoginForm() {
               Create Account
             </button>
           </p>
+
+          <div class="mt-6 pt-5 border-t border-gray-100">
+            <p class="text-center text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">
+              Quick demo access
+            </p>
+            <div class="grid grid-cols-3 gap-2">
+              {DEMO_ACCOUNTS.map((account) => (
+                <button
+                  key={account.label}
+                  type="button"
+                  onClick={() => handleDemoLogin(account)}
+                  disabled={demoLoading !== null || loading}
+                  class="py-2 px-2 text-xs font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {demoLoading === account.label
+                    ? "Signing in..."
+                    : account.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </form>
       )}
 

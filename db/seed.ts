@@ -4,10 +4,16 @@ await load({ allowEmptyValues: true, export: true });
 // Dynamic import so .env is loaded before utils/env.ts reads DATABASE_URL
 // (a static import would hoist above the load() call)
 const { getPool } = await import("./client.ts");
+const { hashPassword } = await import("$lib/auth.ts");
+
+// Shared password for all seeded demo accounts -- lets judges/reviewers
+// log in as any role via the "Login as..." demo buttons on /login.
+const DEMO_PASSWORD = "Demo@1234";
 
 async function seed() {
   const pool = getPool();
   const client = await pool.connect();
+  const demoPasswordHash = await hashPassword(DEMO_PASSWORD);
 
   try {
     console.log("Seeding database...");
@@ -21,7 +27,7 @@ async function seed() {
 
     // Create demo admin user
     await client.queryObject(`
-      INSERT INTO users (id, tenant_id, username, phone, name, email, role, language)
+      INSERT INTO users (id, tenant_id, username, phone, name, email, role, language, password_hash)
       VALUES (
         'a0000000-0000-0000-0000-000000000001',
         'default',
@@ -30,14 +36,15 @@ async function seed() {
         'Admin User',
         'admin@khetscope.app',
         'admin',
-        'en'
+        'en',
+        '${demoPasswordHash}'
       )
-      ON CONFLICT (phone) DO NOTHING;
+      ON CONFLICT (phone) DO UPDATE SET password_hash = EXCLUDED.password_hash;
     `);
 
     // Create demo farmer user
     await client.queryObject(`
-      INSERT INTO users (id, tenant_id, username, phone, name, role, language)
+      INSERT INTO users (id, tenant_id, username, phone, name, role, language, password_hash)
       VALUES (
         'f0000000-0000-0000-0000-000000000001',
         'default',
@@ -45,9 +52,10 @@ async function seed() {
         '+919876543211',
         'Demo Farmer',
         'farmer',
-        'hi'
+        'hi',
+        '${demoPasswordHash}'
       )
-      ON CONFLICT (phone) DO NOTHING;
+      ON CONFLICT (phone) DO UPDATE SET password_hash = EXCLUDED.password_hash;
     `);
 
     // Create demo farm with polygon (sample location in Maharashtra)
@@ -320,7 +328,7 @@ async function seed() {
 
     // Create demo bank officer user
     await client.queryObject(`
-      INSERT INTO users (id, tenant_id, username, phone, name, email, role, language)
+      INSERT INTO users (id, tenant_id, username, phone, name, email, role, language, password_hash)
       VALUES (
         'b0000000-0000-0000-0000-000000000001',
         'default',
@@ -329,9 +337,10 @@ async function seed() {
         'Bank Officer Demo',
         'bank@khetscope.app',
         'bank_officer',
-        'en'
+        'en',
+        '${demoPasswordHash}'
       )
-      ON CONFLICT (phone) DO NOTHING;
+      ON CONFLICT (phone) DO UPDATE SET password_hash = EXCLUDED.password_hash;
     `);
 
     // Create bank customer from demo farmer (if bank_customers table exists)
