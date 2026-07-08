@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import FarmMap from "./FarmMap.tsx";
+import { INDIAN_STATES } from "$utils/constants.ts";
 
 interface CropType {
   id: string;
@@ -38,7 +39,9 @@ export default function BankFarmForm({
   const [state, setState] = useState("Maharashtra");
   const [village, setVillage] = useState("");
   const [soilType, setSoilType] = useState("black_cotton");
+  const [soilTypeOther, setSoilTypeOther] = useState("");
   const [waterSource, setWaterSource] = useState("tubewell");
+  const [waterSourceOther, setWaterSourceOther] = useState("");
   const [ownershipType, setOwnershipType] = useState("owned");
 
   // Location
@@ -111,8 +114,10 @@ export default function BankFarmForm({
           district,
           state,
           village,
-          soilType,
-          waterSource,
+          soilType: soilType === "other" ? soilTypeOther.trim() : soilType,
+          waterSource: waterSource === "other"
+            ? waterSourceOther.trim()
+            : waterSource,
           ownershipType,
         }),
       });
@@ -237,17 +242,7 @@ export default function BankFarmForm({
               onChange={(e) => setState(e.currentTarget.value)}
               class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
             >
-              <option value="Maharashtra">Maharashtra</option>
-              <option value="Madhya Pradesh">Madhya Pradesh</option>
-              <option value="Gujarat">Gujarat</option>
-              <option value="Rajasthan">Rajasthan</option>
-              <option value="Karnataka">Karnataka</option>
-              <option value="Andhra Pradesh">Andhra Pradesh</option>
-              <option value="Telangana">Telangana</option>
-              <option value="Tamil Nadu">Tamil Nadu</option>
-              <option value="Uttar Pradesh">Uttar Pradesh</option>
-              <option value="Punjab">Punjab</option>
-              <option value="Haryana">Haryana</option>
+              {INDIAN_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
 
@@ -268,7 +263,17 @@ export default function BankFarmForm({
                 <option value="sandy">Sandy</option>
                 <option value="loamy">Loamy</option>
                 <option value="clay">Clay</option>
+                <option value="other">Other</option>
               </select>
+              {soilType === "other" && (
+                <input
+                  type="text"
+                  value={soilTypeOther}
+                  onInput={(e) => setSoilTypeOther(e.currentTarget.value)}
+                  placeholder="Enter soil type"
+                  class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 mt-2"
+                />
+              )}
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -285,7 +290,17 @@ export default function BankFarmForm({
                 <option value="river">River/Stream</option>
                 <option value="tank">Tank/Pond</option>
                 <option value="rainfed">Rainfed Only</option>
+                <option value="other">Other</option>
               </select>
+              {waterSource === "other" && (
+                <input
+                  type="text"
+                  value={waterSourceOther}
+                  onInput={(e) => setWaterSourceOther(e.currentTarget.value)}
+                  placeholder="Enter water source"
+                  class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 mt-2"
+                />
+              )}
             </div>
           </div>
 

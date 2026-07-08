@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import FarmMap from "./FarmMap.tsx";
+import { INDIAN_STATES } from "$utils/constants.ts";
 
 interface CropType {
   id: string;
@@ -29,7 +30,9 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
   const [state, setState] = useState("Maharashtra");
   const [village, setVillage] = useState("");
   const [soilType, setSoilType] = useState("black_cotton");
+  const [soilTypeOther, setSoilTypeOther] = useState("");
   const [waterSource, setWaterSource] = useState("tubewell");
+  const [waterSourceOther, setWaterSourceOther] = useState("");
 
   // Location - using map polygon drawing
   const [polygonCoords, setPolygonCoords] = useState<number[][]>([]);
@@ -102,8 +105,10 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
           district,
           state,
           village,
-          soilType,
-          waterSource,
+          soilType: soilType === "other" ? soilTypeOther.trim() : soilType,
+          waterSource: waterSource === "other"
+            ? waterSourceOther.trim()
+            : waterSource,
         }),
       });
 
@@ -141,20 +146,7 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
     }
   };
 
-  const states = [
-    "Maharashtra",
-    "Madhya Pradesh",
-    "Gujarat",
-    "Rajasthan",
-    "Karnataka",
-    "Andhra Pradesh",
-    "Telangana",
-    "Tamil Nadu",
-    "Punjab",
-    "Haryana",
-    "Uttar Pradesh",
-    "Bihar",
-  ];
+  const states = INDIAN_STATES;
 
   const soilTypes = [
     { id: "black_cotton", name: "Black Cotton (Vertisol)" },
@@ -163,6 +155,7 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
     { id: "laterite", name: "Laterite" },
     { id: "sandy", name: "Sandy" },
     { id: "clay", name: "Clay" },
+    { id: "other", name: "Other" },
   ];
 
   return (
@@ -268,6 +261,16 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
               </select>
+              {soilType === "other" && (
+                <input
+                  type="text"
+                  value={soilTypeOther}
+                  onInput={(e) =>
+                    setSoilTypeOther((e.target as HTMLInputElement).value)}
+                  placeholder="Enter soil type"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg mt-2"
+                />
+              )}
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -282,7 +285,18 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
                 {irrigationTypes.map((t) => (
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
+                <option value="other">Other</option>
               </select>
+              {waterSource === "other" && (
+                <input
+                  type="text"
+                  value={waterSourceOther}
+                  onInput={(e) =>
+                    setWaterSourceOther((e.target as HTMLInputElement).value)}
+                  placeholder="Enter water source"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg mt-2"
+                />
+              )}
             </div>
           </div>
 
