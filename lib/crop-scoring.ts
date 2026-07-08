@@ -17,6 +17,11 @@
 
 import type { FarmSoilData } from "$lib/soil.ts";
 import type { WeatherData } from "$lib/satellite/weather.ts";
+import type { GroundwaterData } from "$lib/satellite/groundwater.ts";
+import {
+  groundwaterCapacityMultiplier,
+  groundwaterLabel,
+} from "$lib/satellite/groundwater.ts";
 
 type NutrientStatus = "Low" | "Moderate" | "Adequate" | "High";
 type Demand = "low" | "medium" | "high";
@@ -457,6 +462,7 @@ export interface ScoringResult {
     latestNdvi: number | null;
     ndviTrend: string | null;
     waterSource: string | null;
+    groundwaterPotential: string | null;
     sources: string[];
   };
 }
@@ -525,23 +531,45 @@ function scorePh(crop: CropProfile, ph: number): FactorScore {
 }
 
 /** Irrigation capacity of the farm's water source, as extra mm available */
-function irrigationCapacityMm(waterSource?: string): number {
+function irrigationCapacityMm(
+  waterSource?: string,
+  groundwater?: GroundwaterData | null,
+): number {
+  let base: number;
   switch ((waterSource || "").toLowerCase()) {
     case "canal":
-      return 600;
+      base = 600;
+      break;
     case "borewell":
     case "tubewell":
     case "well":
-      return 450;
+      base = 450;
+      break;
     case "drip":
     case "sprinkler":
-      return 400;
+      base = 400;
+      break;
     case "pond":
     case "tank":
-      return 250;
+      base = 250;
+      break;
     default: // rainfed / unknown
       return 0;
   }
+
+  // Groundwater potential adjusts the effective capacity of
+  // groundwater-dependent sources (borewell / tubewell / well).
+  // A borewell in an excellent zone → more reliable water.
+  // A borewell in a poor zone → limited extraction.
+  const isGWSource = ["borewell", "tubewell", "well"].includes(
+    (waterSource || "").toLowerCase(),
+  );
+  if (isGWSource && groundwater?.potential) {
+    const multiplier = groundwaterCapacityMultiplier(groundwater.potential);
+    return Math.round(base * multiplier);
+  }
+
+  return base;
 }
 
 function scoreWater(
@@ -551,7 +579,8 @@ function scoreWater(
   forecastDays: number,
 ): FactorScore {
   const moisture = input.soil.moisture; // %
-  const irrigationMm = irrigationCapacityMm(input.waterSource);
+  const groundwater = input.soil.groundwater ?? null;
+  const irrigationMm = irrigationCapacityMm(input.waterSource, groundwater);
 
   // Project forecast rainfall over the crop's duration (capped extrapolation:
   // the forecast window is only ~16 days, so scale conservatively at 60%).
@@ -574,10 +603,16 @@ function scoreWater(
   const sourceNote = irrigationMm > 0
     ? `${input.waterSource} irrigation adds ~${irrigationMm}mm`
     : "no irrigation source (rainfed)";
+
+  const gwNote = groundwater?.potential
+    ? ` Groundwater prospects: ${groundwaterLabel(groundwater.potential)}.`
+    : "";
+
   const detail = `${crop.name} needs ~${crop.waterNeedMm}mm/season. ` +
     `Forecast: ${forecastRainMm.toFixed(0)}mm over next ${forecastDays} days ` +
     `(~${projectedSeasonRainMm.toFixed(0)}mm projected over the season), ` +
     `${sourceNote}; current soil moisture ${moisture}%.` +
+    gwNote +
     (crop.droughtTolerant && ratio < 0.7 ? " Drought-tolerant crop." : "");
 
   return { factor: "Water availability", score, weight: WEIGHTS.water, detail };
@@ -713,6 +748,24 @@ function riskPenalties(
     );
   }
 
+  // Groundwater penalty: poor/nil prospects reduce reliability for
+  // non-drought-tolerant crops, especially water-intensive ones.
+  const gwPotential = soil.groundwater?.potential;
+  if (gwPotential === "poor" || gwPotential === "nil") {
+    const isWaterIntensive = crop.waterNeedMm >= 600;
+    const gwPenalty = gwPotential === "nil"
+      ? (isWaterIntensive ? 10 : 6)
+      : (isWaterIntensive ? 6 : 3);
+    penalty += gwPenalty;
+    warnings.push(
+      `Groundwater prospects are ${gwPotential} in this area — ${
+        isWaterIntensive
+          ? `water-intensive ${crop.name} faces high water reliability risk.`
+          : `${crop.name} may face water shortage during dry spells.`
+      }`,
+    );
+  }
+
   return { penalty, warnings };
 }
 
@@ -787,6 +840,7 @@ export function scoreCrops(input: ScoringInput): ScoringResult {
       latestNdvi: input.latestNdvi ?? null,
       ndviTrend: input.ndviTrend ?? null,
       waterSource: input.waterSource ?? null,
+      groundwaterPotential: input.soil.groundwater?.potential ?? null,
       sources: input.soil.sources,
     },
   };

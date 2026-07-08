@@ -33,6 +33,7 @@ interface DataCited {
   latestNdvi: number | null;
   ndviTrend: string | null;
   waterSource: string | null;
+  groundwaterPotential: string | null;
   sources: string[];
 }
 
@@ -126,6 +127,12 @@ export default function CropRecommendations({ farmId }: { farmId: string }) {
             </span>
           </>
         )}
+        {d.groundwaterPotential != null && (
+          <>
+            , groundwater{" "}
+            <span class="font-medium capitalize">{d.groundwaterPotential}</span>
+          </>
+        )}
         {d.sources.length > 0 && (
           <>
             {" "}· Sources: {d.sources.join(", ")}
@@ -178,6 +185,30 @@ export default function CropRecommendations({ farmId }: { farmId: string }) {
                 ⚠ {rec.warnings[0]}
               </p>
             )}
+            {/* Per-recommendation citation: key factor scores at a glance */}
+            <div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-500">
+              {rec.factors.map((f) => (
+                <span key={f.factor}>
+                  {f.factor === "Soil pH"
+                    ? "pH"
+                    : f.factor === "Water availability"
+                    ? "Water"
+                    : f.factor === "Temperature"
+                    ? "Temp"
+                    : f.factor === "Nutrients (NPK)"
+                    ? "NPK"
+                    : f.factor === "Soil texture"
+                    ? "Texture"
+                    : f.factor === "Season"
+                    ? "Season"
+                    : f.factor}:{" "}
+                  <span class="font-medium">{Math.round(f.score * 100)}%</span>
+                </span>
+              ))}
+              <span>
+                Score: <span class="font-medium">{rec.score}/100</span>
+              </span>
+            </div>
           </button>
 
           {expanded === rec.cropId && (

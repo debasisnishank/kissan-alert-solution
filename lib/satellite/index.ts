@@ -121,6 +121,15 @@ export {
   type WeatherData,
 } from "./weather.ts";
 
+// ========== GROUNDWATER ==========
+export {
+  getGroundwaterPotential,
+  groundwaterCapacityMultiplier,
+  type GroundwaterData,
+  groundwaterLabel,
+  type GroundwaterPotential,
+} from "./groundwater.ts";
+
 // ========== AGMARKNET MARKET PRICES ==========
 export {
   getAgmarknetPrices,

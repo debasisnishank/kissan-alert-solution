@@ -4,6 +4,7 @@
  * - SoilGrids (ISRIC) - 250m global soil data
  * - NBSS&LUP / Bhuvan - Indian soil classification
  * - Open-Meteo - Real-time soil moisture/temperature
+ * - Bhuvan WMS - Groundwater prospect zones
  * - UPAg - Government agricultural statistics
  */
 
@@ -14,6 +15,11 @@ import {
   getIndianSoilProfile,
   getSoilHealthRecommendations,
 } from "$lib/satellite/bhuvan_soil.ts";
+import {
+  estimateGroundwaterFromSoil,
+  getGroundwaterPotential,
+  type GroundwaterData,
+} from "$lib/satellite/groundwater.ts";
 
 export interface FarmSoilData {
   moisture: number;
@@ -32,6 +38,8 @@ export interface FarmSoilData {
   erosionRisk?: "none" | "slight" | "moderate" | "severe";
   salinityRisk?: "none" | "slight" | "moderate" | "severe";
   waterloggingRisk?: "none" | "slight" | "moderate" | "severe";
+  /** Groundwater prospect data from Bhuvan WMS */
+  groundwater?: GroundwaterData;
   // Recommendations
   fertilizerRecommendation?: { n: number; p: number; k: number };
   amendments?: string[];
@@ -89,6 +97,7 @@ export async function getFarmSoilData(params: {
   let erosionRisk: "none" | "slight" | "moderate" | "severe" | undefined;
   let salinityRisk: "none" | "slight" | "moderate" | "severe" | undefined;
   let waterloggingRisk: "none" | "slight" | "moderate" | "severe" | undefined;
+  let groundwater: GroundwaterData | undefined;
   let fertilizerRecommendation: { n: number; p: number; k: number } | undefined;
   let amendments: string[] | undefined;
   let suitableCrops: string[] | undefined;
@@ -154,6 +163,17 @@ export async function getFarmSoilData(params: {
     } catch {
       // Continue
     }
+
+    // Try Bhuvan groundwater prospects (scored input, not just overlay)
+    try {
+      const gw = await getGroundwaterPotential(lat, lon);
+      if (gw?.potential) {
+        groundwater = gw;
+        sources.push("Bhuvan GW Prospects");
+      }
+    } catch {
+      // Continue
+    }
   }
 
   // 2. Try SoilGrids for global data (or if Indian sources failed)
@@ -209,6 +229,16 @@ export async function getFarmSoilData(params: {
     potassium = determineNutrientStatus(healthScore, soilType, "K", seed + 5);
   }
 
+  // Groundwater fallback: if Bhuvan WMS didn't return data, estimate
+  // from soil order / texture (always available, no API call needed).
+  if (!groundwater) {
+    const est = estimateGroundwaterFromSoil(soilOrder, texture);
+    if (est.potential) {
+      groundwater = est;
+      sources.push(`GW est. (${est.source})`);
+    }
+  }
+
   if (sources.length === 0) {
     sources.push("Estimated");
   }
@@ -232,6 +262,7 @@ export async function getFarmSoilData(params: {
     fertilizerRecommendation,
     amendments,
     suitableCrops,
+    groundwater,
     sources,
   };
 }
