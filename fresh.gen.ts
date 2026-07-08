@@ -116,6 +116,7 @@ import * as $FarmProcessing from "./islands/FarmProcessing.tsx";
 import * as $LoginForm from "./islands/LoginForm.tsx";
 import * as $NDVIChart from "./islands/NDVIChart.tsx";
 import * as $NotificationSettings from "./islands/NotificationSettings.tsx";
+import * as $ParticleBackground from "./islands/ParticleBackground.tsx";
 import * as $ProfileEditForm from "./islands/ProfileEditForm.tsx";
 import * as $RepaymentForm from "./islands/RepaymentForm.tsx";
 import * as $VoiceLogger from "./islands/VoiceLogger.tsx";
@@ -239,6 +240,7 @@ const manifest = {
     "./islands/LoginForm.tsx": $LoginForm,
     "./islands/NDVIChart.tsx": $NDVIChart,
     "./islands/NotificationSettings.tsx": $NotificationSettings,
+    "./islands/ParticleBackground.tsx": $ParticleBackground,
     "./islands/ProfileEditForm.tsx": $ProfileEditForm,
     "./islands/RepaymentForm.tsx": $RepaymentForm,
     "./islands/VoiceLogger.tsx": $VoiceLogger,
