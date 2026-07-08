@@ -4,6 +4,7 @@
  * - SoilGrids (ISRIC) - 250m global soil data
  * - NBSS&LUP / Bhuvan - Indian soil classification
  * - Open-Meteo - Real-time soil moisture/temperature
+ * - Bhuvan WMS - Groundwater prospect zones
  * - UPAg - Government agricultural statistics
  */
 
@@ -14,6 +15,10 @@ import {
   getIndianSoilProfile,
   getSoilHealthRecommendations,
 } from "$lib/satellite/bhuvan_soil.ts";
+import {
+  getGroundwaterPotential,
+  type GroundwaterData,
+} from "$lib/satellite/groundwater.ts";
 
 export interface FarmSoilData {
   moisture: number;
@@ -32,6 +37,8 @@ export interface FarmSoilData {
   erosionRisk?: "none" | "slight" | "moderate" | "severe";
   salinityRisk?: "none" | "slight" | "moderate" | "severe";
   waterloggingRisk?: "none" | "slight" | "moderate" | "severe";
+  /** Groundwater prospect data from Bhuvan WMS */
+  groundwater?: GroundwaterData;
   // Recommendations
   fertilizerRecommendation?: { n: number; p: number; k: number };
   amendments?: string[];
@@ -89,6 +96,7 @@ export async function getFarmSoilData(params: {
   let erosionRisk: "none" | "slight" | "moderate" | "severe" | undefined;
   let salinityRisk: "none" | "slight" | "moderate" | "severe" | undefined;
   let waterloggingRisk: "none" | "slight" | "moderate" | "severe" | undefined;
+  let groundwater: GroundwaterData | undefined;
   let fertilizerRecommendation: { n: number; p: number; k: number } | undefined;
   let amendments: string[] | undefined;
   let suitableCrops: string[] | undefined;
@@ -150,6 +158,17 @@ export async function getFarmSoilData(params: {
       if (bhuvanMoisture) {
         moisture = Math.round(bhuvanMoisture.moisture);
         sources.push("Bhuvan Soil Moisture");
+      }
+    } catch {
+      // Continue
+    }
+
+    // Try Bhuvan groundwater prospects (scored input, not just overlay)
+    try {
+      const gw = await getGroundwaterPotential(lat, lon);
+      if (gw?.potential) {
+        groundwater = gw;
+        sources.push("Bhuvan GW Prospects");
       }
     } catch {
       // Continue
@@ -232,6 +251,7 @@ export async function getFarmSoilData(params: {
     fertilizerRecommendation,
     amendments,
     suitableCrops,
+    groundwater,
     sources,
   };
 }

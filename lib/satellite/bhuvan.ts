@@ -60,10 +60,17 @@ export const BHUVAN_LAYERS: Record<string, BhuvanLayerConfig> = {
     description: "Watershed delineation",
   },
   GROUNDWATER: {
-    name: "groundwater:gw_prospect",
-    title: "Groundwater Prospects",
+    // "groundwater:gw_prospect" does not exist on the server (confirmed:
+    // WMS returns ServiceException LayerNotDefined for every location).
+    // cgwb:cgwb_depth is a real layer per Bhuvan's GetCapabilities and is
+    // used as a best guess -- pending live verification once their WMS
+    // backend (bhuvan-vec1/vec2) responds again. Per-state fallback
+    // layers also exist (gw:<STATE_NAME>_PRE / _POST) if this doesn't
+    // pan out.
+    name: "cgwb:cgwb_depth",
+    title: "CGWB Depth to Water Level",
     category: "thematic",
-    description: "Groundwater potential zones",
+    description: "Groundwater depth-to-water-level (CGWB)",
   },
 
   // Agricultural layers
