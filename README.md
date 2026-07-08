@@ -45,19 +45,114 @@ weather to deliver personalized farm recommendations as an installable web PWA.
 
 ## Tech Stack
 
-| Layer         | Technology                                          |
-| ------------- | --------------------------------------------------- |
-| Runtime       | Deno 2.0+                                           |
-| Web Framework | Fresh 1.6 (Preact, SSR)                             |
-| Database      | PostgreSQL 16 + PostGIS                             |
-| Auth          | Username/password, PBKDF2 hashing, session tokens   |
-| AI            | Google Gemini 2.0 Flash (analysis, chat, vision)    |
-| Translation   | Sarvam AI (11 languages, TTS)                       |
-| Satellite     | Element 84 Earth Search (free, Sentinel-2, Landsat) |
-| Weather       | Open-Meteo (free, no API key)                       |
-| Push          | Firebase Cloud Messaging (FCM v1 HTTP API)          |
-| CSS           | Tailwind CSS 3.4                                    |
-| Maps          | Leaflet + ISRO Bhuvan WMS layers                    |
+| Layer             | Technology                                                                                                                                            |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime           | Deno 2.0+                                                                                                                                             |
+| Web Framework     | Fresh 1.6 (Preact 10, SSR, islands architecture)                                                                                                      |
+| Database          | PostgreSQL 16+ with PostGIS                                                                                                                           |
+| Validation        | Zod                                                                                                                                                   |
+| Job Queue         | PostgreSQL-backed (`FOR UPDATE SKIP LOCKED`, no external queue)                                                                                       |
+| Auth              | Username/password, PBKDF2 hashing, session cookies                                                                                                    |
+| AI                | Google Gemini 2.0 Flash via Vertex AI (analysis, chat, vision)                                                                                        |
+| Speech-to-Text    | Google Cloud Speech-to-Text, with Gemini audio as fallback                                                                                            |
+| Translation/TTS   | Sarvam AI (11 Indian languages)                                                                                                                       |
+| Earth Observation | Element 84 Earth Search + Microsoft Planetary Computer (fallback), Copernicus Data Space, NASA GIBS, ISRO Bhuvan -- see [Data Sources](#data-sources) |
+| Weather           | Open-Meteo (primary), NASA POWER (agro-climatology)                                                                                                   |
+| Soil              | ISRO Bhuvan/NBSS (India), SoilGrids/ISRIC (global fallback)                                                                                           |
+| Market Prices     | data.gov.in / Agmarknet, eNAM (fallback)                                                                                                              |
+| Maps              | Leaflet, ISRO Bhuvan WMS layers, Ola Maps (Indian geocoding)                                                                                          |
+| Push              | Firebase Cloud Messaging (FCM v1 HTTP API)                                                                                                            |
+| CSS               | Tailwind CSS 3.4                                                                                                                                      |
+| Testing           | Deno's built-in test runner, k6 load tests                                                                                                            |
+| Deployment        | Google Cloud Run via GitHub Actions (Workload Identity Federation)                                                                                    |
+
+## Data Sources
+
+Every data source is free/public -- no paid satellite or weather API, per the
+platform's public-data-only constraint. Each domain has its own fallback chain
+(`lib/satellite/`, `lib/soil.ts`) so a single provider outage degrades quality
+rather than breaking the feature:
+
+- **Satellite imagery (Sentinel-2, Landsat)**:
+  [Element 84 Earth Search](https://earth-search.aws.element84.com) (primary,
+  free STAC API) ->
+  [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com)
+  (fallback)
+- **Additional imagery/map layers**:
+  [Copernicus Data Space](https://dataspace.copernicus.eu) (Sentinel Hub WMS),
+  [NASA GIBS](https://gibs.earthdata.nasa.gov) (MODIS/GPM/SMAP tiles),
+  [ISRO Bhuvan](https://bhuvan.nrsc.gov.in) (Indian thematic layers)
+- **Weather**: [Open-Meteo](https://open-meteo.com) (primary, no auth) ->
+  [NASA POWER](https://power.larc.nasa.gov) (agricultural
+  meteorology/climatology)
+- **Soil**: ISRO Bhuvan/NBSS (India-specific) ->
+  [SoilGrids/ISRIC](https://soilgrids.org) (global 250m) -> Open-Meteo soil
+  moisture -> deterministic fallback
+- **Market prices**: [data.gov.in](https://data.gov.in) / Agmarknet ->
+  [eNAM](https://enam.gov.in) (fallback) -> cached static data
+- **Geocoding**: Ola Maps -> OSM/Nominatim fallback
+
+### External API endpoints (every host the app fetches from)
+
+Every literal base URL the code calls out to, grouped by domain. `lib/`/`ai/`
+paths point to the file that owns the integration.
+
+**AI / voice** (`ai/`, `lib/stt.ts`, `lib/gcp-auth.ts`)
+
+| Provider                            | Endpoint                                                                      | Purpose                                                 |
+| ----------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Google Vertex AI (Gemini 2.0 Flash) | `https://aiplatform.googleapis.com` (or `{region}-aiplatform.googleapis.com`) | Vision/chat/text analysis -- `ai/gemini.ts`             |
+| Google Cloud Speech-to-Text         | `https://speech.googleapis.com/v1/speech:recognize`                           | Voice-log transcription -- `lib/stt.ts`                 |
+| Sarvam AI                           | `https://api.sarvam.ai/v1`                                                    | Translation + TTS, 11 languages -- `ai/sarvam.ts`       |
+| GCP metadata server                 | `http://metadata.google.internal`                                             | ADC token source on Cloud Run only -- `lib/gcp-auth.ts` |
+
+Admin-configurable alternate LLM providers exist in code (`lib/ai-settings.ts`)
+for tenant flexibility, but are **not used by default** -- Gemini via Vertex AI
+is the only active LLM. Listed for completeness: Anthropic Claude
+(`api.anthropic.com`), OpenAI (`api.openai.com`), Groq (`api.groq.com`),
+OpenRouter (`openrouter.ai`).
+
+**Satellite / Earth observation** (`lib/satellite/`)
+
+| Source                               | Endpoint(s)                                                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Element 84 Earth Search              | `earth-search.aws.element84.com`                                                                                                 |
+| Microsoft Planetary Computer         | `planetarycomputer.microsoft.com`                                                                                                |
+| Copernicus Data Space                | `dataspace.copernicus.eu`, `catalogue.dataspace.copernicus.eu`, `identity.dataspace.copernicus.eu`, `sh.dataspace.copernicus.eu` |
+| NASA GIBS                            | `gibs.earthdata.nasa.gov`                                                                                                        |
+| NASA POWER                           | `power.larc.nasa.gov`                                                                                                            |
+| USGS Landsat                         | `landsatlook.usgs.gov`, `ers.cr.usgs.gov`                                                                                        |
+| ISRO Bhuvan (WMS/thematic layers)    | `bhuvan.nrsc.gov.in`, `bhuvan-vec1.nrsc.gov.in`, `bhuvan-vec2.nrsc.gov.in`, `bhuvan-app1.nrsc.gov.in`, `bhuvan-ras2.nrsc.gov.in` |
+| TiTiler (COG tile rendering)         | `titiler.xyz`                                                                                                                    |
+| Esri World Imagery (Leaflet basemap) | `server.arcgisonline.com`                                                                                                        |
+
+**Soil**: SoilGrids/ISRIC -- `rest.isric.org`, `soilgrids.org`
+
+**Weather**: Open-Meteo -- `api.open-meteo.com`, `archive-api.open-meteo.com`
+
+**Market prices / government data**
+
+| Source      | Endpoint                          |
+| ----------- | --------------------------------- |
+| data.gov.in | `api.data.gov.in`                 |
+| eNAM        | `enam.gov.in`                     |
+| UPAg        | `upag.gov.in`, `data.upag.gov.in` |
+
+**Maps / geocoding** (`lib/maps/`)
+
+| Source                             | Endpoint                      |
+| ---------------------------------- | ----------------------------- |
+| Ola Maps                           | `api.olamaps.io`              |
+| OSM Nominatim (geocoding fallback) | `nominatim.openstreetmap.org` |
+| OSM static map (tile fallback)     | `staticmap.openstreetmap.de`  |
+
+**Push notifications** (`lib/notifications.ts`): Firebase Cloud Messaging --
+`fcm.googleapis.com/v1/projects/{id}/messages:send`, service-account auth via
+`oauth2.googleapis.com/token`
+
+**News aggregation** (`lib/news/crawler.ts`) -- agri-business RSS feeds: The
+Hindu, Indian Express, LiveMint, Hindustan Times, Business Standard, Financial
+Express, Moneycontrol, Zee News
 
 ## Quick Start
 
