@@ -1178,7 +1178,15 @@ export default function FarmDetailPage({ data }: PageProps<FarmDetailData>) {
 
         {/* Farm Map */}
         <div class="bg-white rounded-xl border p-4 mb-4">
-          <h3 class="font-semibold text-gray-900 mb-3">Farm Location</h3>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-gray-900">Farm Location</h3>
+            <a
+              href={`/app/farm/${farm.id}/edit`}
+              class="text-sm font-medium text-primary-600 hover:text-primary-700"
+            >
+              Edit
+            </a>
+          </div>
           <FarmMapPreview
             center={{ lat: farm.lat, lng: farm.lon }}
             polygon={farm.polygon}

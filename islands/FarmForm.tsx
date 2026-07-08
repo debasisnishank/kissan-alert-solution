@@ -14,28 +14,67 @@ interface IrrigationType {
   nameHi: string;
 }
 
+interface EditableFarm {
+  id: string;
+  name: string;
+  state: string;
+  district: string;
+  village: string;
+  soilType: string;
+  waterSource: string;
+  // GeoJSON order: [lon, lat], same as FarmMap/onPolygonChange.
+  polygonCoords: number[][];
+}
+
 interface Props {
   cropTypes: readonly CropType[];
   irrigationTypes: readonly IrrigationType[];
+  farm?: EditableFarm;
 }
 
-export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
+export default function FarmForm({ cropTypes, irrigationTypes, farm }: Props) {
+  const isEdit = !!farm;
+  const knownSoilIds = [
+    "black_cotton",
+    "red",
+    "alluvial",
+    "laterite",
+    "sandy",
+    "clay",
+  ];
+
   const [step, setStep] = useState<"info" | "location" | "crop">("info");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Farm info
-  const [name, setName] = useState("");
-  const [district, setDistrict] = useState("");
-  const [state, setState] = useState("Maharashtra");
-  const [village, setVillage] = useState("");
-  const [soilType, setSoilType] = useState("black_cotton");
-  const [soilTypeOther, setSoilTypeOther] = useState("");
-  const [waterSource, setWaterSource] = useState("tubewell");
-  const [waterSourceOther, setWaterSourceOther] = useState("");
+  const [name, setName] = useState(farm?.name ?? "");
+  const [district, setDistrict] = useState(farm?.district ?? "");
+  const [state, setState] = useState(farm?.state ?? "Maharashtra");
+  const [village, setVillage] = useState(farm?.village ?? "");
+  const [soilType, setSoilType] = useState(
+    farm && !knownSoilIds.includes(farm.soilType) ? "other" : (
+      farm?.soilType ?? "black_cotton"
+    ),
+  );
+  const [soilTypeOther, setSoilTypeOther] = useState(
+    farm && !knownSoilIds.includes(farm.soilType) ? farm.soilType : "",
+  );
+  const [waterSource, setWaterSource] = useState(
+    farm && !irrigationTypes.some((t) => t.id === farm.waterSource)
+      ? "other"
+      : (farm?.waterSource ?? "tubewell"),
+  );
+  const [waterSourceOther, setWaterSourceOther] = useState(
+    farm && !irrigationTypes.some((t) => t.id === farm.waterSource)
+      ? farm.waterSource
+      : "",
+  );
 
   // Location - using map polygon drawing
-  const [polygonCoords, setPolygonCoords] = useState<number[][]>([]);
+  const [polygonCoords, setPolygonCoords] = useState<number[][]>(
+    farm?.polygonCoords ?? [],
+  );
   const [manualCoords, setManualCoords] = useState("");
   const [useManualEntry, setUseManualEntry] = useState(false);
 
@@ -95,29 +134,41 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
         coordinates: [closedCoords],
       };
 
-      // Create farm
-      const farmRes = await fetch("/api/farms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          polygon,
-          district,
-          state,
-          village,
-          soilType: soilType === "other" ? soilTypeOther.trim() : soilType,
-          waterSource: waterSource === "other"
-            ? waterSourceOther.trim()
-            : waterSource,
-        }),
-      });
+      const body = {
+        name,
+        polygon,
+        district,
+        state,
+        village,
+        soilType: soilType === "other" ? soilTypeOther.trim() : soilType,
+        waterSource: waterSource === "other"
+          ? waterSourceOther.trim()
+          : waterSource,
+      };
+
+      const farmRes = await fetch(
+        farm ? `/api/farms/${farm.id}` : "/api/farms",
+        {
+          method: farm ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        },
+      );
 
       if (!farmRes.ok) {
         const data = await farmRes.json();
-        throw new Error(data.error || "Failed to create farm");
+        throw new Error(
+          data.error ||
+            (isEdit ? "Failed to update farm" : "Failed to create farm"),
+        );
       }
 
-      const { data: farm } = await farmRes.json();
+      const { data: savedFarm } = await farmRes.json();
+
+      if (isEdit) {
+        globalThis.location.href = `/app/farm/${savedFarm.id}`;
+        return;
+      }
 
       // Create crop declaration if provided
       if (cropType && sowingDate) {
@@ -126,7 +177,7 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            farmId: farm.id,
+            farmId: savedFarm.id,
             cropType,
             variety: variety || undefined,
             sowingDate,
@@ -138,7 +189,7 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
       }
 
       // Redirect to processing screen to fetch satellite data
-      globalThis.location.href = `/app/farm/processing/${farm.id}`;
+      globalThis.location.href = `/app/farm/processing/${savedFarm.id}`;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -168,19 +219,25 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
 
       {/* Progress Steps */}
       <div class="flex items-center justify-between mb-6">
-        {["info", "location", "crop"].map((s, i) => (
+        {(isEdit ? ["info", "location"] : ["info", "location", "crop"]).map((
+          s,
+          i,
+          steps,
+        ) => (
           <div key={s} class="flex items-center">
             <div
               class={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                step === s ? "bg-primary-600 text-white" : i <
-                    ["info", "location", "crop"].indexOf(step)
+                step === s
+                  ? "bg-primary-600 text-white"
+                  : i < steps.indexOf(step)
                   ? "bg-primary-100 text-primary-600"
                   : "bg-gray-100 text-gray-400"
               }`}
             >
               {i + 1}
             </div>
-            {i < 2 && <div class="w-12 h-0.5 bg-gray-200 mx-2" />}
+            {i < steps.length - 1 &&
+              <div class="w-12 h-0.5 bg-gray-200 mx-2" />}
           </div>
         ))}
       </div>
@@ -188,7 +245,9 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
       {/* Step 1: Basic Info */}
       {step === "info" && (
         <div class="space-y-4">
-          <h2 class="text-lg font-semibold text-gray-900">Farm Details</h2>
+          <h2 class="text-lg font-semibold text-gray-900">
+            {isEdit ? "Edit Farm Details" : "Farm Details"}
+          </h2>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -306,7 +365,7 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
             disabled={!name}
             class="w-full bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 disabled:opacity-50"
           >
-            Next: Add Location
+            {isEdit ? "Next: Farm Boundary" : "Next: Add Location"}
           </button>
         </div>
       )}
@@ -407,11 +466,13 @@ export default function FarmForm({ cropTypes, irrigationTypes }: Props) {
             </button>
             <button
               type="button"
-              onClick={() => setStep("crop")}
-              disabled={getPolygonPoints().length < 3}
+              onClick={() => isEdit ? handleSubmit() : setStep("crop")}
+              disabled={getPolygonPoints().length < 3 || loading}
               class="flex-1 bg-primary-600 text-white py-3 rounded-lg font-semibold hover:bg-primary-700 disabled:opacity-50"
             >
-              Next: Add Crop
+              {isEdit
+                ? (loading ? "Saving..." : "Save Changes")
+                : "Next: Add Crop"}
             </button>
           </div>
         </div>
