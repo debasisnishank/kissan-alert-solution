@@ -91,10 +91,14 @@ export default function FarmMapPreview({
         scrollWheelZoom: false,
       });
 
-      // Satellite layer with labels
+      // Satellite layer with labels. Esri's imagery isn't captured at high
+      // zoom everywhere (rural India especially) -- past maxNativeZoom it
+      // serves an opaque "Map data not yet available" placeholder tile
+      // instead of a 404, so cap it here and let Leaflet upscale the last
+      // real tile for closer zooms instead.
       const satelliteLayer = L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        { maxZoom: 19 },
+        { maxZoom: 19, maxNativeZoom: 17 },
       );
       satelliteLayer.addTo(map);
 
