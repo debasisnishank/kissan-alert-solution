@@ -73,7 +73,7 @@ weather to deliver personalized farm recommendations as an installable web PWA.
 
 ```bash
 git clone <repo-url>
-cd compass-deno
+cd kissan-alert-solution
 cp .env.example .env
 ```
 
@@ -106,7 +106,7 @@ automatically.
 deno task db:migrate
 ```
 
-This applies all 12 migrations creating 40+ tables.
+This applies all 13 migrations creating 44+ tables.
 
 ### 4. Seed Demo Data
 
@@ -161,7 +161,7 @@ Default credentials after seeding:
 ## Project Structure
 
 ```
-compass-deno/
+kissan-alert-solution/
 ├── ai/                          # AI integrations
 │   ├── gemini.ts                # Gemini: analysis, chat, vision
 │   ├── sarvam.ts                # Sarvam: translation, TTS
@@ -171,7 +171,7 @@ compass-deno/
 │   └── AdminLayout.tsx          # Admin sidebar layout
 ├── db/                          # Database layer
 │   ├── client.ts                # PostgreSQL pool + query helpers
-│   ├── migrate.ts               # 10 versioned migrations
+│   ├── migrate.ts               # 13 versioned migrations
 │   └── seed.ts                  # Demo data seeder
 ├── islands/                     # Interactive Preact islands
 │   ├── FarmMap.tsx              # Leaflet map with drawing
@@ -264,10 +264,16 @@ compass-deno/
 
 ### AI Services
 
-| Variable         | Description                   | Required    |
-| ---------------- | ----------------------------- | ----------- |
-| `GEMINI_API_KEY` | Google Gemini API key         | Recommended |
-| `SARVAM_API_KEY` | Sarvam AI for translation/TTS | Optional    |
+Gemini runs through Vertex AI, authenticated as the runtime's own GCP identity
+-- there's no API key to set. Locally, run
+`gcloud auth application-default login` once; on Cloud Run, the service
+account's IAM roles (`aiplatform.user`, `speech.client`) handle it.
+
+| Variable               | Description                          | Required    |
+| ---------------------- | ------------------------------------ | ----------- |
+| `GOOGLE_CLOUD_PROJECT` | GCP project ID for Vertex AI/STT     | Recommended |
+| `VERTEX_AI_LOCATION`   | Vertex AI region (default: `global`) | Optional    |
+| `SARVAM_API_KEY`       | Sarvam AI for translation/TTS        | Optional    |
 
 ### Push Notifications (Firebase)
 
@@ -287,7 +293,7 @@ compass-deno/
 
 ## Database Schema
 
-10 migrations creating 39+ tables across domains:
+13 migrations creating 44+ tables across domains:
 
 - **Multi-tenancy**: `tenants`, `users`, `sessions`
 - **Farm Management**: `farms`, `farm_crops`, `crop_declarations`,
@@ -321,14 +327,21 @@ compass-deno/
 
 ## Deployment
 
-### Deno Deploy
+### Google Cloud Run
+
+Every push to `main` triggers `.github/workflows/deploy-cloud-run.yml`, which
+authenticates via Workload Identity Federation (no long-lived key) and runs:
 
 ```bash
-# Push to GitHub, connect repo at https://dash.deno.com
-# Set environment variables in the Deno Deploy dashboard
+gcloud run deploy compass \
+  --source . \
+  --region asia-south1 \
+  --set-secrets APP_SECRET=app-secret:latest,DATABASE_URL=database-url:latest
 ```
 
-Environment variables are set in the Deno Deploy dashboard (not `.env` files).
+`APP_SECRET` and `DATABASE_URL` come from Secret Manager, not `.env`. Gemini and
+Cloud STT need no secret at all -- the Cloud Run service account is granted the
+`aiplatform.user` and `speech.client` IAM roles directly.
 
 ### Docker
 
@@ -340,12 +353,13 @@ docker-compose up -d
 
 - [ ] Set strong `APP_SECRET` (64+ random characters)
 - [ ] Configure `DATABASE_URL` with SSL
-- [ ] Set `GEMINI_API_KEY` for AI features
+- [ ] Grant the service account `aiplatform.user` and `speech.client` IAM roles
+      for Gemini/STT
 - [ ] Set `FCM_*` variables for push notifications
 - [ ] Run `deno task db:migrate` on production database
 - [ ] Configure HTTPS/TLS termination
 - [ ] Set up database backups
-- [ ] Monitor with Deno Deploy analytics
+- [ ] Monitor with Cloud Run metrics/logs
 
 ## License
 
