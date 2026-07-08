@@ -1,6 +1,7 @@
 import { Head } from "$fresh/runtime.ts";
 import { Layout } from "$components/Layout.tsx";
 import { SITE_NAME, SUPPORTED_LANGUAGES } from "$utils/constants.ts";
+import ParticleBackground from "$islands/ParticleBackground.tsx";
 
 /**
  * Landing page — the visual thesis is "read your field from orbit".
@@ -42,17 +43,18 @@ export default function LandingPage() {
           dangerouslySetInnerHTML={{
             __html: `
             .cmp-topo{
-              background-color:#052e16;
+              position: relative;
+              background-color:#010703;
               background-image:
-                radial-gradient(120% 90% at 85% -10%, rgba(74,222,128,.16), transparent 55%),
-                radial-gradient(90% 70% at 0% 110%, rgba(234,179,8,.12), transparent 50%),
-                repeating-radial-gradient(circle at 78% 18%, rgba(134,239,172,.06) 0 1px, transparent 1px 26px),
-                linear-gradient(180deg,#0b3a20 0%,#052e16 60%,#04240f 100%);
+                radial-gradient(120% 90% at 80% -10%, rgba(16,185,129,0.14), transparent 60%),
+                radial-gradient(90% 80% at 10% 110%, rgba(245,158,11,0.06), transparent 50%),
+                repeating-radial-gradient(circle at 78% 18%, rgba(134,239,172,0.02) 0 1px, transparent 1px 26px),
+                linear-gradient(180deg,#020b04 0%,#010703 60%,#010502 100%);
             }
             .cmp-grid-lines{
               background-image:
-                linear-gradient(rgba(134,239,172,.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(134,239,172,.08) 1px, transparent 1px);
+                linear-gradient(rgba(134,239,172,.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(134,239,172,.05) 1px, transparent 1px);
               background-size:34px 34px;
             }
             .cmp-scan{
@@ -60,7 +62,7 @@ export default function LandingPage() {
             }
             .cmp-scan::after{
               content:""; position:absolute; left:0; right:0; height:38%;
-              background:linear-gradient(180deg, transparent, rgba(190,242,100,.35), transparent);
+              background:linear-gradient(180deg, transparent, rgba(190,242,100,.3), transparent);
               mix-blend-mode:screen;
               animation:cmp-sweep 4.2s cubic-bezier(.4,0,.2,1) infinite;
             }
@@ -87,10 +89,11 @@ export default function LandingPage() {
         />
       </Head>
 
-      <div class="bg-[#04240f] text-white antialiased overflow-x-hidden">
+      <div class="bg-[#010401] text-white antialiased overflow-x-hidden">
         {/* ── Header ─────────────────────────────────────────── */}
-        <header class="cmp-topo relative">
-          <div class="absolute inset-0 cmp-grid-lines opacity-40" aria-hidden />
+        <header class="cmp-topo relative overflow-hidden">
+          <ParticleBackground />
+          <div class="absolute inset-0 cmp-grid-lines opacity-20" aria-hidden />
           <div class="relative max-w-6xl mx-auto px-5 py-5 flex items-center justify-between">
             <a href="/" class="cmp-link flex items-center gap-2.5">
               <span class="w-9 h-9 rounded-xl bg-primary-400 text-[#04240f] grid place-items-center shadow-lg shadow-primary-500/20">
@@ -117,7 +120,7 @@ export default function LandingPage() {
               </a>
               <a
                 href="/login"
-                class="cmp-link bg-secondary-400 text-[#04240f] px-4 py-2 rounded-lg font-semibold hover:bg-secondary-300 transition-colors"
+                class="cmp-link bg-secondary-400 text-[#04240f] px-4 py-2 rounded-lg font-semibold hover:bg-secondary-300 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 shadow-md hover:shadow-secondary-500/20"
               >
                 Get started
               </a>
@@ -145,13 +148,13 @@ export default function LandingPage() {
               <div class="cmp-rise cmp-d4 mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
                 <a
                   href="/login"
-                  class="cmp-link bg-secondary-400 text-[#04240f] px-6 py-3.5 rounded-xl text-base font-semibold hover:bg-secondary-300 shadow-lg shadow-secondary-500/20 text-center transition-colors"
+                  class="cmp-link bg-secondary-400 text-[#04240f] px-6 py-3.5 rounded-xl text-base font-semibold hover:bg-secondary-300 shadow-lg shadow-secondary-500/30 text-center hover:scale-[1.03] active:scale-[0.98] transition-all duration-300"
                 >
                   Start free
                 </a>
                 <a
                   href="#how"
-                  class="cmp-link px-6 py-3.5 rounded-xl text-base font-semibold text-white border border-white/25 hover:bg-white/10 text-center transition-colors"
+                  class="cmp-link px-6 py-3.5 rounded-xl text-base font-semibold text-white border border-white/15 bg-white/[0.02] hover:bg-white/[0.08] hover:border-white/30 text-center hover:scale-[1.03] active:scale-[0.98] transition-all duration-300"
                 >
                   See how it works
                 </a>
@@ -163,9 +166,10 @@ export default function LandingPage() {
             </div>
 
             {/* Right: the signature — a satellite NDVI plot readout */}
-            <div class="cmp-rise cmp-d3">
+            <div class="cmp-rise cmp-d3 relative">
+              <div class="absolute -inset-2 rounded-2xl bg-gradient-to-br from-primary-500/10 to-secondary-500/10 blur-xl opacity-75 pointer-events-none" />
               <figure
-                class="relative rounded-2xl bg-[#0a3018]/80 border border-primary-400/25 p-4 sm:p-5 shadow-2xl shadow-black/40 backdrop-blur-sm"
+                class="relative rounded-2xl bg-[#020a04]/70 border border-white/10 p-4 sm:p-5 shadow-2xl shadow-black/60 backdrop-blur-md hover:border-primary-400/30 transition-all duration-500"
                 role="img"
                 aria-label="Satellite NDVI scan of a farm plot showing mostly healthy vegetation with a detected stress zone near the centre."
               >
@@ -350,9 +354,10 @@ export default function LandingPage() {
         </section>
 
         {/* ── Language strip ───────────────────────────────── */}
-        <section class="cmp-topo relative px-5 py-20 md:py-24">
-          <div class="absolute inset-0 cmp-grid-lines opacity-30" aria-hidden />
-          <div class="relative max-w-6xl mx-auto text-center">
+        <section class="cmp-topo relative px-5 py-20 md:py-24 overflow-hidden">
+          <ParticleBackground />
+          <div class="absolute inset-0 cmp-grid-lines opacity-15" aria-hidden />
+          <div class="relative max-w-6xl mx-auto text-center z-10">
             <p class="font-tech text-xs tracking-[0.22em] text-secondary-300 mb-3">
               SPOKEN IN 11 LANGUAGES
             </p>
@@ -365,7 +370,7 @@ export default function LandingPage() {
             </p>
           </div>
           {/* marquee of native language names */}
-          <div class="relative mt-12 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
+          <div class="relative mt-12 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] z-10">
             <div class="cmp-marquee flex gap-3 w-max">
               {[...SUPPORTED_LANGUAGES, ...SUPPORTED_LANGUAGES].map((l, i) => (
                 <span
@@ -380,8 +385,9 @@ export default function LandingPage() {
         </section>
 
         {/* ── Final CTA ────────────────────────────────────── */}
-        <section class="bg-[#04240f] px-5 py-20 md:py-28">
-          <div class="max-w-2xl mx-auto text-center">
+        <section class="relative bg-gradient-to-b from-[#010401] to-[#020b04] px-5 py-20 md:py-28 overflow-hidden">
+          <div class="absolute inset-0 bg-radial-gradient at-center from-primary-950/20 to-transparent opacity-60 pointer-events-none" />
+          <div class="relative max-w-2xl mx-auto text-center z-10">
             <h2 class="font-display font-semibold text-3xl sm:text-5xl tracking-tight leading-[1.05]">
               Point {SITE_NAME} at your field.
             </h2>
@@ -391,7 +397,7 @@ export default function LandingPage() {
             </p>
             <a
               href="/login"
-              class="cmp-link inline-block mt-9 bg-secondary-400 text-[#04240f] px-8 py-4 rounded-xl text-lg font-semibold hover:bg-secondary-300 shadow-xl shadow-secondary-500/20 transition-colors"
+              class="cmp-link inline-block mt-9 bg-secondary-400 text-[#04240f] px-8 py-4 rounded-xl text-lg font-semibold hover:bg-secondary-300 shadow-xl shadow-secondary-500/30 hover:scale-[1.03] active:scale-[0.98] transition-all duration-300"
             >
               Create your free account
             </a>
@@ -399,7 +405,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── Footer ───────────────────────────────────────── */}
-        <footer class="bg-[#04240f] border-t border-white/10 px-5 py-10">
+        <footer class="bg-[#010401] border-t border-white/10 px-5 py-10">
           <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-2 text-primary-100/70">
               <svg
@@ -511,7 +517,7 @@ function Feature(
   };
 
   return (
-    <div class="group rounded-2xl border border-gray-200/80 bg-earth-50/40 p-6 hover:border-primary-300 hover:shadow-lg hover:shadow-primary-600/5 transition-all">
+    <div class="group rounded-2xl border border-gray-200/80 bg-white p-6 hover:border-primary-300 hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-1 transition-all duration-300">
       <div class="flex items-center justify-between mb-5">
         <span class="w-11 h-11 rounded-xl bg-primary-600 text-white grid place-items-center group-hover:bg-primary-700 transition-colors">
           <svg
