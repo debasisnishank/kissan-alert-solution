@@ -70,6 +70,7 @@ import * as $app_expert from "./routes/app/expert.tsx";
 import * as $app_farm_id_ from "./routes/app/farm/[id].tsx";
 import * as $app_farm_id_alerts from "./routes/app/farm/[id]/alerts.tsx";
 import * as $app_farm_id_analyze from "./routes/app/farm/[id]/analyze.tsx";
+import * as $app_farm_id_edit from "./routes/app/farm/[id]/edit.tsx";
 import * as $app_farm_id_log from "./routes/app/farm/[id]/log.tsx";
 import * as $app_farm_id_report from "./routes/app/farm/[id]/report.tsx";
 import * as $app_farm_add from "./routes/app/farm/add.tsx";
@@ -190,6 +191,7 @@ const manifest = {
     "./routes/app/farm/[id].tsx": $app_farm_id_,
     "./routes/app/farm/[id]/alerts.tsx": $app_farm_id_alerts,
     "./routes/app/farm/[id]/analyze.tsx": $app_farm_id_analyze,
+    "./routes/app/farm/[id]/edit.tsx": $app_farm_id_edit,
     "./routes/app/farm/[id]/log.tsx": $app_farm_id_log,
     "./routes/app/farm/[id]/report.tsx": $app_farm_id_report,
     "./routes/app/farm/add.tsx": $app_farm_add,
