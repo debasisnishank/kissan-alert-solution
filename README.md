@@ -18,8 +18,6 @@ weather to deliver personalized farm recommendations as an installable web PWA.
   farm, crop, weather)
 - **Weather Intelligence** - 7-day forecast, rainfall, irrigation advisories
   (Open-Meteo, free)
-- **Video Reels** - TikTok-style agricultural education videos (YouTube Data
-  API)
 - **Alerts & Advisories** - Push notifications for weather, pest, market events
 - **Voice Advisories** - Listen in 11 Indian languages (Sarvam AI TTS)
 - **Government Schemes** - Browse eligible schemes with deadlines
@@ -37,7 +35,6 @@ weather to deliver personalized farm recommendations as an installable web PWA.
 - **User Management** - Create, edit, toggle active, reset passwords, role
   assignment
 - **Alert Management** - Create bulk alerts by district/crop/farm targeting
-- **Video Reels Management** - Fetch, toggle visibility, delete YouTube videos
 - **News Management** - Crawl, manage agricultural news articles
 - **Scheme & Product Management** - Full CRUD for government schemes and agri
   products
@@ -58,7 +55,6 @@ weather to deliver personalized farm recommendations as an installable web PWA.
 | Translation   | Sarvam AI (11 languages, TTS)                       |
 | Satellite     | Element 84 Earth Search (free, Sentinel-2, Landsat) |
 | Weather       | Open-Meteo (free, no API key)                       |
-| Videos        | YouTube Data API v3                                 |
 | Push          | Firebase Cloud Messaging (FCM v1 HTTP API)          |
 | CSS           | Tailwind CSS 3.4                                    |
 | Maps          | Leaflet + ISRO Bhuvan WMS layers                    |
@@ -179,15 +175,13 @@ compass-deno/
 │   └── seed.ts                  # Demo data seeder
 ├── islands/                     # Interactive Preact islands
 │   ├── FarmMap.tsx              # Leaflet map with drawing
-│   ├── VideoReels.tsx           # TikTok-style reels player
 │   ├── LoginForm.tsx            # Auth forms
 │   └── ...                      # 14+ islands
 ├── lib/                         # Business logic
 │   ├── auth.ts                  # Auth: hashing, sessions, cache
 │   ├── leads.ts                 # CRM lead scoring & export
 │   ├── notifications.ts         # FCM push notification sender
-│   ├── news/crawler.ts          # RSS news aggregator
-│   └── videos/youtube.ts        # YouTube video fetcher
+│   └── news/crawler.ts          # RSS news aggregator
 ├── middlewares/                  # Fresh middleware
 │   └── auth.ts                  # Session validation + caching
 ├── routes/
@@ -195,13 +189,11 @@ compass-deno/
 │   │   ├── index.tsx            # Dashboard
 │   │   ├── leads.tsx            # CRM leads + export
 │   │   ├── notifications.tsx    # Push notification composer
-│   │   ├── reels.tsx            # Video management
 │   │   ├── news.tsx             # News management
 │   │   └── ...                  # Users, farms, alerts, etc.
 │   ├── api/                     # REST API endpoints
 │   │   ├── auth/                # Login, register, logout
 │   │   ├── farms/               # CRUD + observations
-│   │   ├── reels/               # Video reels + fetch
 │   │   ├── leads/               # Shareable CRM lead links
 │   │   ├── push/                # FCM token register/unregister
 │   │   └── ...                  # Chat, alerts, crops, weather
@@ -242,14 +234,11 @@ compass-deno/
 | POST   | `/api/analyze-crop`            | Camera image analysis     |
 | GET    | `/api/recommendations/:farmId` | AI recommendations        |
 
-### Content
+### Alerts
 
-| Method | Endpoint          | Description           |
-| ------ | ----------------- | --------------------- |
-| GET    | `/api/reels`      | Paginated video reels |
-| POST   | `/api/reels/view` | Track video view      |
-| POST   | `/api/reels/like` | Like/unlike video     |
-| GET    | `/api/alerts`     | User's active alerts  |
+| Method | Endpoint      | Description          |
+| ------ | ------------- | -------------------- |
+| GET    | `/api/alerts` | User's active alerts |
 
 ### Push Notifications
 
@@ -288,13 +277,6 @@ compass-deno/
 | `FCM_SERVICE_ACCOUNT_EMAIL` | Service account email             |
 | `FCM_PRIVATE_KEY`           | Service account private key (PEM) |
 
-### Content APIs
-
-| Variable                     | Description                   |
-| ---------------------------- | ----------------------------- |
-| `YOUTUBE_API_KEY`            | YouTube Data API v3 key       |
-| `FACEBOOK_PAGE_ACCESS_TOKEN` | Facebook Graph API (optional) |
-
 ### Feature Flags
 
 | Variable              | Default | Description                |
@@ -312,8 +294,7 @@ compass-deno/
   `farm_observations`, `farm_activity_logs`, `farm_calendar_events`
 - **Satellite**: `satellite_products`
 - **Alerts**: `alerts`, `alert_schedules`, `advisory_messages`
-- **Content**: `video_sources`, `video_views`, `video_fetch_log`,
-  `news_articles`, `content_items`
+- **Content**: `news_articles`, `content_items`
 - **Commerce**: `agri_products`, `manufacturers`, `product_recommendations`,
   `market_prices`, `dealers`
 - **Government**: `government_schemes`, `schemes`, `farmer_scheme_matches`
@@ -326,18 +307,17 @@ compass-deno/
 
 ## Cron Jobs
 
-8 scheduled background tasks:
+7 scheduled background tasks:
 
-| Schedule  | Job                   | Description                      |
-| --------- | --------------------- | -------------------------------- |
-| Every 6h  | `ingest-satellite`    | Fetch satellite catalog updates  |
-| Every 12h | `extract-features`    | Extract NDVI/EVI from imagery    |
-| Every 8h  | `generate-advisories` | Run AI advisory engine           |
-| Every 6h  | `weather-alerts`      | Check weather and issue alerts   |
-| Every 8h  | `crawl-news`          | Fetch agricultural news from RSS |
-| Every 12h | `fetch-video-reels`   | Fetch YouTube agriculture videos |
-| Daily 6AM | `market-prices`       | Update mandi market prices       |
-| Every 4h  | `cleanup-sessions`    | Remove expired sessions          |
+| Schedule | Job                   | Description                      |
+| -------- | --------------------- | -------------------------------- |
+| Every 6h | `ingest-satellite`    | Fetch satellite catalog updates  |
+| Every 4h | `extract-features`    | Extract NDVI/EVI from imagery    |
+| Every 2h | `generate-advisories` | Run AI advisory engine           |
+| Every 3h | `update-weather`      | Refresh weather data             |
+| 3x daily | `crawl-news`          | Fetch agricultural news from RSS |
+| Daily    | `sync-market-prices`  | Update mandi market prices       |
+| Daily    | `cleanup-old-data`    | Remove stale/expired records     |
 
 ## Deployment
 
@@ -362,7 +342,6 @@ docker-compose up -d
 - [ ] Configure `DATABASE_URL` with SSL
 - [ ] Set `GEMINI_API_KEY` for AI features
 - [ ] Set `FCM_*` variables for push notifications
-- [ ] Set `YOUTUBE_API_KEY` for video reels
 - [ ] Run `deno task db:migrate` on production database
 - [ ] Configure HTTPS/TLS termination
 - [ ] Set up database backups
