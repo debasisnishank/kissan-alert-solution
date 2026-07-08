@@ -20,7 +20,6 @@ const SEVERITY_STYLES: Record<string, string> = {
 };
 
 const LANGUAGES = [
-  { code: "or-IN", label: "ଓଡ଼ିଆ (Odia)" },
   { code: "hi-IN", label: "हिन्दी (Hindi)" },
   { code: "en-IN", label: "English" },
 ];
@@ -31,7 +30,7 @@ export default function VoiceLogger(
   { cropType }: { cropType?: string },
 ) {
   const [phase, setPhase] = useState<Phase>("idle");
-  const [language, setLanguage] = useState("or-IN");
+  const [language, setLanguage] = useState("hi-IN");
   const [seconds, setSeconds] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<VoiceLogResult | null>(null);
